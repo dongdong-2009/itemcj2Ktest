@@ -14,6 +14,8 @@
         <TargetCommonOption>
           <Device>STM32F407ZG</Device>
           <Vendor>STMicroelectronics</Vendor>
+          <PackID>Keil.STM32F4xx_DFP.1.0.8</PackID>
+          <PackURL>http://www.keil.com/pack</PackURL>
           <Cpu>IROM(0x08000000,0x100000) IRAM(0x20000000,0x20000) IRAM2(0x10000000,0x10000) CPUTYPE("Cortex-M4") FPU2 CLOCK(168000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
@@ -143,7 +145,6 @@
             <RestoreToolbox>1</RestoreToolbox>
             <RestoreTracepoints>1</RestoreTracepoints>
             <RestoreSysVw>1</RestoreSysVw>
-            <UsePdscDebugDescription>1</UsePdscDebugDescription>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
           <TargetSelection>6</TargetSelection>
@@ -364,7 +365,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\CORE;..\SYSTEM\delay;..\SYSTEM\sys;..\USER;..\FWLIB\inc;..\UCOSII\CONFIG;..\UCOSII\CORE;..\UCOSII\PORT;..\inc</IncludePath>
+              <IncludePath>..\CORE;..\SYSTEM\delay;..\SYSTEM\sys;..\USER;..\FWLIB\inc;..\UCOSII\CONFIG;..\UCOSII\CORE;..\UCOSII\PORT;..\tiza_drive\inc;..\sys_code\inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -580,17 +581,30 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>SRC</GroupName>
+          <GroupName>tiza_scr</GroupName>
           <Files>
             <File>
               <FileName>tiza_driver.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\tiza_driver.c</FilePath>
+              <FilePath>..\tiza_drive\src\tiza_driver.c</FilePath>
             </File>
           </Files>
         </Group>
         <Group>
-          <GroupName>INC</GroupName>
+          <GroupName>sys_scr</GroupName>
+        </Group>
+        <Group>
+          <GroupName>tiza_inc</GroupName>
+          <Files>
+            <File>
+              <FileName>tiza_driver.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\tiza_driver.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>sys_inc</GroupName>
         </Group>
       </Groups>
     </Target>
