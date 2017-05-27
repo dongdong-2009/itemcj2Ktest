@@ -69,8 +69,9 @@ void led0_task(void *pdata)
 	uint16 mat_index;
 	
 	Debug_init(115200);
-	DPrint("\n硬件定时器测试:完成时间:%dms",5000);	//-向FIFO中写入数据.
+	//-DPrint("\n硬件定时器测试:完成时间:%dms",5000);	//-向FIFO中写入数据.
 	//-DealDebugSend(1);
+	RS232_init(115200);
 	
 	while(1)
 	{
@@ -98,6 +99,19 @@ void led0_task(void *pdata)
 //		j++;
 //		DealDebugSend(1);
 		
+		len = ReadRS232Data(temp_data,20);
+		if(len)
+		{
+			RS232Print("\nRS232接收测试:打印接收指令:%s",temp_data);
+			DealRS232Send(1);
+			mat_index = SubMatch("ok",2,temp_data,len);
+			if(mat_index)
+			{
+				RS232Print("\nRS232接收测试:打印次数:%d次",j);
+				j++;
+				DealRS232Send(1);
+			}
+		}
 	}
 }
 
@@ -113,7 +127,9 @@ void led1_task(void *pdata)
 		delay_ms(300);
 		OFF_RED_LED();
 		delay_ms(300);
-		//-DebugSendData(0xAA);
+		//-RS232SendData(0xAA);
+//		RS232Print("\n硬件定时器测试:完成时间:%dms",5000);	//-向FIFO中写入数据.
+//		DealRS232Send(1);
 	}
 }
 

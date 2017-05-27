@@ -603,6 +603,11 @@
               <FileType>1</FileType>
               <FilePath>..\sys_code\src\tiza_selfdef.c</FilePath>
             </File>
+            <File>
+              <FileName>tiza_RS232.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\tiza_RS232.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

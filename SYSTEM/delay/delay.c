@@ -95,6 +95,7 @@ void SysTick_Handler(void)
 		OSTimeTick();       				//调用ucos的时钟服务程序 
 		//-
 		DebugRecData(NULL,0);
+		RS232RecData(NULL,0);
 		OSIntExit();       	 				//触发任务切换软中断
 	}
 }

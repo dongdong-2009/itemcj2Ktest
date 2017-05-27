@@ -50,6 +50,7 @@
 	#include "tiza_driver.h"
 	#include "tiza_debug.h"
 	#include "app_debug.h"
+	#include "tiza_RS232.h"
 //	#include "tiza_l218.h"
 //	#include "tiza_business.h"
 //	#include "tiza_spi_flash.h"	
