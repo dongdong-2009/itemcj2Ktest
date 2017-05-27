@@ -65,25 +65,56 @@ void start_task(void *pdata)
 //LED0任务
 void led0_task(void *pdata)
 {	 	
+	uint8 temp_data[20],len,i,j=0;
+	uint16 mat_index;
+	
+	Debug_init(115200);
+	DPrint("\n硬件定时器测试:完成时间:%dms",5000);	//-向FIFO中写入数据.
+	//-DealDebugSend(1);
+	
 	while(1)
 	{
 		ON_GRE_LED();
 		delay_ms(300);
 		OFF_GRE_LED();
 		delay_ms(300);
-	};
+		
+		len = ReadDebugData(temp_data,20);
+		if(len)
+		{
+			DPrint("\nDebug接收测试:打印接收指令:%s",temp_data);
+			DealDebugSend(1);
+			mat_index = SubMatch("ok",2,temp_data,len);
+			if(mat_index)
+			{
+				DPrint("\nDebug接收测试:打印次数:%d次",j);
+				j++;
+				DealDebugSend(1);
+			}
+		}
+		//-for(i=0;i<len;i++)
+			//-DebugSendData(temp_data[i]);
+//		DPrint("\nDebug测试:打印次数:%d次",j);
+//		j++;
+//		DealDebugSend(1);
+		
+	}
 }
 
 //LED1任务
 void led1_task(void *pdata)
 {	  
+	
+	
+	
 	while(1)
 	{
 		ON_RED_LED();
 		delay_ms(300);
 		OFF_RED_LED();
 		delay_ms(300);
-	};
+		//-DebugSendData(0xAA);
+	}
 }
 
 

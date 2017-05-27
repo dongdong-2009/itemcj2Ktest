@@ -5,6 +5,7 @@
 #if SYSTEM_SUPPORT_OS
 #include "includes.h"					//支持OS时，使用	  
 #endif
+#include "tiza_include.h"
 //////////////////////////////////////////////////////////////////////////////////  
 
 //修改说明
@@ -91,7 +92,9 @@ void SysTick_Handler(void)
 	if(delay_osrunning==1)					//OS开始跑了,才执行正常的调度处理
 	{
 		OSIntEnter();						//进入中断
-		OSTimeTick();       				//调用ucos的时钟服务程序               
+		OSTimeTick();       				//调用ucos的时钟服务程序 
+		//-
+		DebugRecData(NULL,0);
 		OSIntExit();       	 				//触发任务切换软中断
 	}
 }

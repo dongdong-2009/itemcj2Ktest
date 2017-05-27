@@ -478,6 +478,11 @@
               <FileType>1</FileType>
               <FilePath>..\FWLIB\src\stm32f4xx_usart.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f4xx_dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FWLIB\src\stm32f4xx_dma.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -588,10 +593,27 @@
               <FileType>1</FileType>
               <FilePath>..\tiza_drive\src\tiza_driver.c</FilePath>
             </File>
+            <File>
+              <FileName>tiza_debug.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\tiza_debug.c</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_selfdef.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sys_code\src\tiza_selfdef.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>sys_scr</GroupName>
+          <Files>
+            <File>
+              <FileName>app_debug.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sys_code\src\app_debug.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>tiza_inc</GroupName>

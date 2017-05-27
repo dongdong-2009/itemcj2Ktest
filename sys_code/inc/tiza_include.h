@@ -6,6 +6,11 @@
 #include "stm32f4xx_it.h"
 #include "stm32f4xx_conf.h"
 	
+	enum{
+		FALSE = 0,
+		TRUE = !FALSE
+	};
+	
 	#define false FALSE	
 	#define true TRUE
 	#define NULL 0
@@ -17,6 +22,7 @@
 //	#define GPS_DEBUG
 //	#define GPRS_DEBUG
 //	#define CAN_ERROR_ALARM
+	
 	
 
 	#define LEN_12 12
@@ -40,8 +46,10 @@
 #include "sys.h"
 #include "delay.h"
 	
-//	#include "tiza_selfdef.h"
+	#include "tiza_selfdef.h"
 	#include "tiza_driver.h"
+	#include "tiza_debug.h"
+	#include "app_debug.h"
 //	#include "tiza_l218.h"
 //	#include "tiza_business.h"
 //	#include "tiza_spi_flash.h"	
@@ -61,6 +69,18 @@
 	#define false FALSE	
 	#define true TRUE
 	#define NULL 0
+	
+/************************************************************************
+*                  DEFINE DATA STRUCTURE
+*************************************************************************/
+typedef union{
+	INT16U	word;
+	struct{
+		INT8U  low;
+		INT8U  high;
+	} bytes;
+}WORD_UNION;
+
 	
 	#define RES_FALSE		0
 	#define RES_TRUE		1
