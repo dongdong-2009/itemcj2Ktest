@@ -52,6 +52,9 @@
 	#include "app_debug.h"
 	#include "tiza_RS232.h"
 	#include "tiza_RS485.h"
+	#include "tiza_sys.h"
+	#include "tiza_rtc.h"
+	#include "tiza_sd.h"
 //	#include "tiza_l218.h"
 //	#include "tiza_business.h"
 //	#include "tiza_spi_flash.h"	
@@ -104,6 +107,9 @@ typedef union{
 	
 	
 	#define QLJ_DEBUG 1
+	
+	// Define this to create lib
+	#define CREATE_LIB	
 	
 	
 #endif

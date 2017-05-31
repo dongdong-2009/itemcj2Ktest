@@ -1,7 +1,18 @@
 #include "tiza_include.h"
 
+#define TEST_SD 1
 
-
+typedef struct
+{
+  INT8U   	StoreName[13];				//正在存储数据的文件名称；
+  INT32U 		StoreFileIndexOffset;	//正在存储的文件在索引文件中的偏移地址
+  INT8U   	ReadName[13];			//正在读取数据的文件名称；
+  INT32U		ReadFileSize;			//正在读取的文件的大小
+  INT32U		ReadFileOffset;		//正在读取的文件的偏移地址;
+	INT32U		ReadFileIndexOffset;	//正在读取的文件在INDEX中的偏移地址;
+	INT16U		LastSendLen;			//上一次发送的数据长度
+}XCPCCP_FILE;
+XCPCCP_FILE  XcpCcpFile;
 
 /////////////////////////UCOSII任务设置///////////////////////////////////
 //START 任务
@@ -56,7 +67,7 @@ void start_task(void *pdata)
 	OS_ENTER_CRITICAL();			//进入临界区(无法被中断打断)    
 	
 	OSTaskCreate(led0_task,(void *)0,(OS_STK*)&LED0_TASK_STK[LED0_STK_SIZE-1],LED0_TASK_PRIO);						   
-	OSTaskCreate(led1_task,(void *)0,(OS_STK*)&LED1_TASK_STK[LED1_STK_SIZE-1],LED1_TASK_PRIO);	 				   
+//-	OSTaskCreate(led1_task,(void *)0,(OS_STK*)&LED1_TASK_STK[LED1_STK_SIZE-1],LED1_TASK_PRIO);	 				   
 	OSTaskSuspend(START_TASK_PRIO);	//挂起起始任务.
 	
 	OS_EXIT_CRITICAL();				//退出临界区(可以被中断打断)
@@ -65,14 +76,507 @@ void start_task(void *pdata)
 //LED0任务
 void led0_task(void *pdata)
 {	 	
-	uint8 temp_data[20],len,i,j=0;
+	uint8 temp_data[20],i,j=0;
 	uint16 mat_index;
+	INT8U res,res1;
+	INT32U len;
+	
+	INT8U TestData[200];
+	INT8U Dat[1053];
+
+	INT8U Dat1[1053];
+	RTC_ST rtc;
+	INT32U ReadOffset,ReadLen,TotalLen;
+	SD_STATUS SdStatus;
 	
 	Debug_init(115200);
 	//-DPrint("\n硬件定时器测试:完成时间:%dms",5000);	//-向FIFO中写入数据.
 	//-DealDebugSend(1);
-	RS232_init(115200);
-	RS485_init(115200);
+//	RS232_init(115200);
+//	RS485_init(115200);
+	
+#if TEST_SD > 0
+	DPrint("\nSD卡模块测试:");
+	DealDebugSend(1);
+	ClearWatchdog();
+	TickDelay = 5000;
+	res = SdInit();
+	switch(res)
+	{
+		case 0:
+			DPrint("\n----SD卡初始化成功.");
+			break;
+		case 1:
+			DPrint("\n----SD卡初始化失败.");
+			break;
+		case 2:
+			DPrint("\n----无SD卡.");
+			break;
+		case 3:
+			DPrint("\n----SD卡损坏.");
+			break;
+	}
+	DPrint("\n----SD卡初始化时间:%dms",(5000 - TickDelay));
+	DealDebugSend(1);
+	
+	TickDelay = 5000;
+	DPrint("\n----SD卡格式化");
+	DealDebugSend(1);
+	res = SDFormat();
+	switch(res)
+	{
+		case 0:
+			DPrint("\n----SD卡格式化成功");
+			break;
+		case 1:
+			DPrint("\n----SD卡格式化失败.");
+			break;
+		case 2:
+			DPrint("\n----SD卡不存在.");
+			break;
+		case 3:
+			DPrint("\n----SD卡损坏.");
+			break;
+	}
+	DPrint("\n----SD卡格式化时间:%dms",(5000 - TickDelay));
+	DealDebugSend(1);
+	
+	ClearWatchdog();
+	DPrint("\n----SD卡新建文件");
+	DealDebugSend(1);
+	TickDelay = 5000;
+	res = SDNewFile("SD card","txt",rtc);
+	switch(res)
+	{
+		case 0:
+			DPrint("\n----新建文件[SD card.txt]成功");
+			break;
+		case 1:
+			DPrint("\n----[SD card.txt]文件已存在.");
+			break;
+		case 2:
+			DPrint("\n----SD卡已满.");
+			break;
+		case 3:
+			DPrint("\n----SD卡不存在.");
+			break;
+		case 4:
+			DPrint("\n----SD卡损坏.");
+			break;
+	}
+	DPrint("\n----SD卡新建文件时间:%dms",(5000 - TickDelay));
+	DealDebugSend(1);
+	ClearWatchdog();
+	
+//	DPrint("\n新建300个文件");
+//	for(i = 0;i< 300;i++)
+//	{
+//		TestData[0] = i/100 + 0x30;
+//		len = i%100;
+//		TestData[1] = len/10 + 0x30;
+//		len = len%10;
+//		TestData[2] = len + 0x30;
+//		TestData[3] = 0;
+////-		RtcGetTime(&rtc);
+//		res = SDNewFile(TestData,"txt",rtc);
+//		if(res == 0)
+//		{
+//			DPrint("\n----新建文件%m成功",TestData,3);
+//		}
+//		else
+//		{
+//			DPrint("\n----新建文件%m失败，返回值 = %d",TestData,3,res);
+//		}
+//		DealDebugSend(1);
+//		ClearWatchdog();
+//	}
+//	DPrint("\n----测试不打开文件直接操作函数的时间");
+//	DealDebugSend(1);
+	
+//	TickDelay = 5000;
+//	memset(TestData,0x3a,200);
+//	res = SDAddData("SD card","txt",TestData,200,rtc);
+//	switch(res)
+//	{
+//		case 0:
+//			DPrint("\n----[SD card.txt]追加数据成功");
+//			break;
+//		case 1:
+//			DPrint("\n----[SD card.txt]文件不存在.");
+//			break;
+//		case 2:
+//			DPrint("\n----SD卡已满.");
+//			break;
+//		case 3:
+//			DPrint("\n----SD卡不存在.");
+//			break;
+//		case 4:
+//			DPrint("\n----SD卡损坏.");
+//			break;
+//	}
+//	DPrint("\n----SD卡追加数据时间:%dms",(5000 - TickDelay));
+//	DealDebugSend(1);
+//	ClearWatchdog();
+//	TickDelay = 5000;
+//	res = SDFileCheck("SD card","txt",&len);
+//	switch(res)
+//	{
+//		case 0:
+//			DPrint("\n----[SD card.txt]文件大小读取成功,%x",len);
+//			break;
+//		case 1:
+//			DPrint("\n----[SD card.txt]文件不存在.");
+//			break;
+//		case 2:
+//			DPrint("\n----SD卡不存在.");
+//			break;
+//		case 3:
+//			DPrint("\n----SD卡损坏.");
+//			break;
+//	}
+//	DPrint("\n----SD卡检查文件时间:%dms",(5000 - TickDelay));
+//	DealDebugSend(1);
+
+//	ClearWatchdog();
+//	TickDelay = 5000;
+//	memset(TestData,0x33,20);
+//	res = SDModifyData("SD card","txt",5,TestData,20,rtc);
+//	switch(res)
+//	{
+//		case 0:
+//			DPrint("\n----将[SD card.txt]中第5个字节开始的数据修改为0x33修改数据成功");
+//			break;
+//		case 1:
+//			DPrint("\n----[SD card.txt]文件不存在.");
+//			break;
+//		case 2:
+//			DPrint("\n----SD卡不存在.");
+//			break;
+//		case 3:
+//			DPrint("\n----SD卡损坏.");
+//			break;
+//	}
+//	DPrint("\n----SD卡修改数据时间:%dms",(5000 - TickDelay));
+//	DealDebugSend(1);
+//	ClearWatchdog();
+//	TickDelay = 5000;
+//	res = SDReadData("SD card","txt",0,TestData,200);
+//	switch(res)
+//	{
+//		case 0:
+//			DPrint("\n----从[SD card.txt]中读取数据成功");
+//			break;
+//		case 1:
+//			DPrint("\n----[SD card.txt]文件不存在.");
+//			break;
+//		case 2:
+//			DPrint("\n----SD卡不存在.");
+//			break;
+//		case 3:
+//			DPrint("\n----SD卡损坏.");
+//			break;
+//	}
+//	DPrint("\n----SD卡读数据时间:%dms",(5000 - TickDelay));
+//	DealDebugSend(1);
+//	ClearWatchdog();
+//	DPrint("\n----测试打开文件后的SD卡操作时间");
+//	TickDelay = 5000;
+//	res = SDOpenFile("SD card","txt");
+//	switch(res)
+//	{
+//		case 0:
+//			DPrint("\n----[SD card.txt]打开成功");
+//			break;
+//		case 1:
+//			DPrint("\n----[SD card.txt]文件不存在.");
+//			break;
+//		case 2:
+//			DPrint("\n----SD卡不存在.");
+//			break;
+//		case 3:
+//			DPrint("\n----SD卡损坏.");
+//			break;
+//	}
+//	DPrint("\n----文件打开时间:%dms",(5000 - TickDelay));
+//	DealDebugSend(1);
+//	TickDelay = 5000;
+//	memset(TestData,0x3a,200);
+//	res = SDAddData("SD card","txt",TestData,200,rtc);
+//	switch(res)
+//	{
+//		case 0:
+//			DPrint("\n----[SD card.txt]追加数据成功");
+//			break;
+//		case 1:
+//			DPrint("\n----[SD card.txt]文件不存在.");
+//			break;
+//		case 2:
+//			DPrint("\n----SD卡已满.");
+//			break;
+//		case 3:
+//			DPrint("\n----SD卡不存在.");
+//			break;
+//		case 4:
+//			DPrint("\n----SD卡损坏.");
+//			break;
+//	}
+//	DPrint("\n----SD卡追加数据时间:%dms",(5000 - TickDelay));
+//	DealDebugSend(1);
+//	ClearWatchdog();
+//	
+
+//	ClearWatchdog();
+//	TickDelay = 5000;
+//	memset(TestData,0x33,20);
+//	res = SDModifyData("SD card","txt",5,TestData,20,rtc);
+//	switch(res)
+//	{
+//		case 0:
+//			DPrint("\n----将[SD card.txt]中第5个字节开始的数据修改为0x33修改数据成功");
+//			break;
+//		case 1:
+//			DPrint("\n----[SD card.txt]文件不存在.");
+//			break;
+//		case 2:
+//			DPrint("\n----SD卡不存在.");
+//			break;
+//		case 3:
+//			DPrint("\n----SD卡损坏.");
+//			break;
+//	}
+//	DPrint("\n----SD卡修改数据时间:%dms",(5000 - TickDelay));
+//	DealDebugSend(1);
+//	ClearWatchdog();
+//	TickDelay = 5000;
+//	res = SDReadData("SD card","txt",0,TestData,200);
+//	switch(res)
+//	{
+//		case 0:
+//			DPrint("\n----从[SD card.txt]中读取数据成功");
+//			break;
+//		case 1:
+//			DPrint("\n----[SD card.txt]文件不存在.");
+//			break;
+//		case 2:
+//			DPrint("\n----SD卡不存在.");
+//			break;
+//		case 3:
+//			DPrint("\n----SD卡损坏.");
+//			break;
+//	}
+//	DPrint("\n----SD卡读数据时间:%dms",(5000 - TickDelay));
+//	DealDebugSend(1);
+//	TickDelay = 5000;
+//	res = SDCloseFile("SD card","txt");
+//	switch(res)
+//	{
+//		case 0:
+//			DPrint("\n----[SD card.txt]关闭成功");
+//			break;
+//		case 1:
+//			DPrint("\n----[SD card.txt]文件不存在.");
+//			break;
+//		case 2:
+//			DPrint("\n----SD卡不存在.");
+//			break;
+//		case 3:
+//			DPrint("\n----SD卡损坏.");
+//			break;
+//	}
+//	DPrint("\n----文件关闭时间:%dms",(5000 - TickDelay));
+//	TickDelay = 5000;
+//	res = SDFileCheck("SD card","txt",&len);
+//	switch(res)
+//	{
+//		case 0:
+//			DPrint("\n----[SD card.txt]文件大小读取成功,%x",len);
+//			break;
+//		case 1:
+//			DPrint("\n----[SD card.txt]文件不存在.");
+//			break;
+//		case 2:
+//			DPrint("\n----SD卡不存在.");
+//			break;
+//		case 3:
+//			DPrint("\n----SD卡损坏.");
+//			break;
+//	}
+//	DPrint("\n----SD卡检查文件时间:%dms",(5000 - TickDelay));
+//	DealDebugSend(1);
+//	ClearWatchdog();
+//	TickDelay = 5000;
+//	res = SDCheck(&SdStatus);
+//	switch(res)
+//	{
+//		case 0:
+//			DPrint("\n----SD卡状态读取成功,总容量:%x,可用容量:%x",SdStatus.Capability,SdStatus.AvailableCapability);
+//			break;
+//		case 1:
+//			DPrint("\n----SD卡状态读取失败.");
+//			break;
+//		case 2:
+//			DPrint("\n----SD卡不存在.");
+//			break;
+//		case 3:
+//			DPrint("\n----SD卡损坏.");
+//			break;
+//	}
+//	DPrint("\n----SD卡读状态时间:%dms",(5000 - TickDelay));
+//	DealDebugSend(1);
+//	ClearWatchdog();
+//	memcpy(XcpCcpFile.StoreName,"170321094231",13);
+//	TickDelay = 5000;
+//	res = SDDeleteFile((char*)XcpCcpFile.StoreName,"txt");
+//	switch(res)
+//	{
+//		case 0:
+//			DPrint("\n----删除文件[170321094231.txt]成功");
+//			break;
+//		case 1:
+//			DPrint("\n----[170321094231.txt]文件不存在.");
+//			break;
+//		case 2:
+//			DPrint("\n----SD卡不存在.");
+//			break;
+//		case 3:
+//			DPrint("\n----SD卡损坏.");
+//			break;
+//	}
+//	res = SDNewFile((char*)XcpCcpFile.StoreName,"txt",rtc);
+//	switch(res)
+//	{
+//		case 0:
+//			DPrint("\n----新建文件[170321094231.txt]成功");
+//			break;
+//		case 1:
+//			DPrint("\n----[170321094231.txt]文件已存在.");
+//			break;
+//		case 2:
+//			DPrint("\n----SD卡已满.");
+//			break;
+//		case 3:
+//			DPrint("\n----SD卡不存在.");
+//			break;
+//		case 4:
+//			DPrint("\n----SD卡损坏.");
+//			break;
+//	}
+//	
+//	TotalLen = 0;
+//	for(j = 0;j < 0x60;j ++)
+//	{
+//		for(i = 0;i < 1053;i++)
+//		{
+//			Dat[i] = i;
+//		}
+//		
+//		len = (j + 11)%1053;
+//		
+//		SDFileCheck((char*)XcpCcpFile.StoreName,"txt",&ReadOffset);
+//		DPrint("\nXcpCcpFile.StoreName,数据写入前文件大小:%x.\n",ReadOffset);
+//		res = SDOpenFile((char*)XcpCcpFile.StoreName,"txt");
+//		switch(res)
+//		{
+//			case 0:
+//				DPrint("\n----打开文件[170321094231.txt]成功");
+//				break;
+//			case 1:
+//				DPrint("\n----[170321094231.txt]文件已存在.");
+//				break;
+//			case 2:
+//				DPrint("\n----打开的文件超过最大值.");
+//				break;
+//			case 3:
+//				DPrint("\n----SD卡不存在.");
+//				break;
+//			case 4:
+//				DPrint("\n----SD卡损坏.");
+//				break;
+//		}
+////-		RtcGetTime(&rtc);
+//		SDAddData((char*)XcpCcpFile.StoreName,"TXT",Dat,len,rtc);
+//		TotalLen += len;
+//		DPrint("XcpCcpFile.StoreName,写入数据的总长度:%x.\n",TotalLen);
+//		res = SDCloseFile((char*)XcpCcpFile.StoreName,"txt");
+//		switch(res)
+//		{
+//			case 0:
+//				DPrint("\n----关闭文件[170321094231.txt]成功");
+//				break;
+//			case 1:
+//				DPrint("\n----[170321094231.txt]文件已存在.");
+//				break;
+//			case 2:
+//				DPrint("\n----打开的文件超过最大值.");
+//				break;
+//			case 3:
+//				DPrint("\n----SD卡不存在.");
+//				break;
+//			case 4:
+//				DPrint("\n----SD卡损坏.");
+//				break;
+//		}
+//		SDFileCheck((char*)XcpCcpFile.StoreName,"txt",&ReadLen);
+//		DPrint("XcpCcpFile.StoreName,写入数据后的文件大小:%x.\n",ReadLen);
+//		res = SDCloseFile((char*)XcpCcpFile.StoreName,"txt");
+//		switch(res)
+//		{
+//			case 0:
+//				DPrint("\n----关闭文件[170321094231.txt]成功");
+//				break;
+//			case 1:
+//				DPrint("\n----[170321094231.txt]文件不存在.");
+//				break;
+//			case 2:
+//				DPrint("\n----文件关闭成功.");
+//				break;
+//			case 3:
+//				DPrint("\n----SD卡不存在.");
+//				break;
+//			case 4:
+//				DPrint("\n----SD卡损坏.");
+//				break;
+//		}
+//		res = SDOpenFile((char*)XcpCcpFile.StoreName,"txt");
+//		switch(res)
+//		{
+//			case 0:
+//				DPrint("\n----打开文件[170321094231.txt]成功");
+//				break;
+//			case 1:
+//				DPrint("\n----[170321094231.txt]文件已存在.");
+//				break;
+//			case 2:
+//				DPrint("\n----打开的文件超过最大值.");
+//				break;
+//			case 3:
+//				DPrint("\n----SD卡不存在.");
+//				break;
+//			case 4:
+//				DPrint("\n----SD卡损坏.");
+//				break;
+//		}
+//		memset(Dat1,0x00,1053);
+//		res = SDReadData((char*)XcpCcpFile.StoreName,"txt",ReadOffset,Dat1,len);
+//		if(res != 0)
+//		{
+//			DPrint("\n文件读取失败,返回值:%o.\n",res);
+//		}
+//		
+//		for(i = 0;i<len;i++)
+//		{
+//			if(Dat[i] != Dat1[i])
+//			{
+//				DPrint("文件不一致.\n");
+//				DealDebugSend(1);
+//				break;
+//			}
+//		}
+//		DealDebugSend(1);
+//	}
+//	DPrint("\nSD卡测试完成.\n");
+//	DealDebugSend(1);
+#endif	
 	
 	while(1)
 	{

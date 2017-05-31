@@ -365,7 +365,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\CORE;..\SYSTEM\delay;..\SYSTEM\sys;..\USER;..\FWLIB\inc;..\UCOSII\CONFIG;..\UCOSII\CORE;..\UCOSII\PORT;..\tiza_drive\inc;..\sys_code\inc</IncludePath>
+              <IncludePath>..\CORE;..\SYSTEM\delay;..\SYSTEM\sys;..\USER;..\FWLIB\inc;..\UCOSII\CONFIG;..\UCOSII\CORE;..\UCOSII\PORT;..\tiza_drive\inc;..\sys_code\inc;..\tiza_drive\inc\fatfs</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -482,6 +482,16 @@
               <FileName>stm32f4xx_dma.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\FWLIB\src\stm32f4xx_dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_sdio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FWLIB\src\stm32f4xx_sdio.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_iwdg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FWLIB\src\stm32f4xx_iwdg.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -607,6 +617,56 @@
               <FileName>tiza_RS232.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\tiza_drive\src\tiza_RS232.c</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_RS485.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\tiza_RS485.c</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_sd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\tiza_sd.c</FilePath>
+            </File>
+            <File>
+              <FileName>sdio_sdcard.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\sdio_sdcard.c</FilePath>
+            </File>
+            <File>
+              <FileName>exfuns.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\fatfs\exfuns.c</FilePath>
+            </File>
+            <File>
+              <FileName>ff.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\fatfs\ff.c</FilePath>
+            </File>
+            <File>
+              <FileName>malloc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\malloc.c</FilePath>
+            </File>
+            <File>
+              <FileName>diskio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\fatfs\diskio.c</FilePath>
+            </File>
+            <File>
+              <FileName>ccsbcs.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\fatfs\ccsbcs.c</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_sys.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\tiza_sys.c</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_wd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\tiza_wd.c</FilePath>
             </File>
           </Files>
         </Group>
