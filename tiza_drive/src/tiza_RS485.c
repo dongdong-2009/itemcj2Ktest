@@ -1,26 +1,31 @@
 /*
-   RS232 driver for TZ2000
-   UART6
+   RS485 driver for TZ2000
+   UART2
+   485_RX	PA3
+   485_RE	PG5
+   485_TX PA2
 */
-#define RS232_GLOBAL
+#define RS485_GLOBAL
 
 #include "tiza_include.h"
 
-#define RS232_Mode_ITorDMA	1	//-0 中断,1 DMA
+#define RS485_Mode_ITorDMA	1	//-0 中断,1 DMA
 
-#define RS232_RX_MAX    256
-#define RS232_TX_MAX    1024
+#define RS485_RX_MAX    256
+#define RS485_TX_MAX    1024
 
-INT8U   RS232Rx[RS232_RX_MAX];
-INT8U   RS232Tx[RS232_TX_MAX];
+INT8U   RS485Rx[RS485_RX_MAX];
+INT8U   RS485Tx[RS485_TX_MAX];
 
-static  FIFO    RS232TxFifo;
-static  FIFO    RS232RxFifo;
+static  FIFO    RS485TxFifo;
+static  FIFO    RS485RxFifo;
 
 #define SEND_BUF_SIZE 8200	//发送数据长度,最好等于sizeof(TEXT_TO_SEND)+2的整数倍.
 
 static  INT8U SendBuff[SEND_BUF_SIZE];	//发送数据缓冲区
 
+#define DISABLE_485_RECV()	(GPIO_SetBits(GPIOG, GPIO_Pin_5));
+#define ENABLE_485_RECV()	(GPIO_ResetBits(GPIOG, GPIO_Pin_5));
 ////////////////////////////////////////////////////////////////////////////////
 /*****************************************************************
 *                   FIFO
@@ -132,19 +137,19 @@ static  INT16U FIFOUsed(FIFO *fifo)
 
 static  void print_byte(INT8U ch)
 {
-  WriteFIFO(&RS232TxFifo,ch);
+  WriteFIFO(&RS485TxFifo,ch);
 }
 
 static  void print_bytehex(INT8U ch)
 {
-  WriteFIFO(&RS232TxFifo,SemiHexToChar(ch >> 4));
-  WriteFIFO(&RS232TxFifo,SemiHexToChar(ch));
-  WriteFIFO(&RS232TxFifo,' ');
+  WriteFIFO(&RS485TxFifo,SemiHexToChar(ch >> 4));
+  WriteFIFO(&RS485TxFifo,SemiHexToChar(ch));
+  WriteFIFO(&RS485TxFifo,' ');
 }
 
 static  void print_mem(INT8U *mem, INT16U memsize)
 {
-  WriteFIFOs(&RS232TxFifo,mem,memsize);
+  WriteFIFOs(&RS485TxFifo,mem,memsize);
 }
 
 static  void print_memhex(INT8U *mem, INT16U memsize)
@@ -202,7 +207,7 @@ static  void sprint_byte(INT8U ch)
 %m : memory
 %p : Pointer
 */
-void RS232Print(const char *fmt, ...)
+void RS485Print(const char *fmt, ...)
 {
   char *s;
   INT8U *ptr;
@@ -419,32 +424,42 @@ static  void MYDMA_Enable(DMA_Stream_TypeDef *DMA_Streamx,u16 ndtr)
 }	  
 
 
-uint8 RS232_init(uint32 bound)
+uint8 RS485_init(uint32 bound)
 {
 	//GPIO端口设置
 	GPIO_InitTypeDef GPIO_InitStructure;
 	USART_InitTypeDef USART_InitStructure;
-#if RS232_Mode_ITorDMA == 0	
+#if RS485_Mode_ITorDMA == 0	
 	NVIC_InitTypeDef NVIC_InitStructure;
 #endif	
 	
-	USART_ITConfig(USART6, USART_IT_RXNE, DISABLE);//关闭相关中断
-	USART_DeInit(USART6);
+	USART_ITConfig(USART2, USART_IT_RXNE, DISABLE);//关闭相关中断
+	USART_DeInit(USART2);
 	
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC,ENABLE); //使能GPIOC时钟
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART6,ENABLE);//使能USART6时钟
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA,ENABLE); //使能GPIOA时钟
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2,ENABLE);//使能USART2时钟
+	
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOG,ENABLE); //使能GPIOG时钟
+	// 485_en pin
+  GPIO_InitStructure.GPIO_Pin= GPIO_Pin_5;
+	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_OUT;//输出
+	GPIO_InitStructure.GPIO_OType=GPIO_OType_PP;  //推挽输出
+	GPIO_InitStructure.GPIO_PuPd=GPIO_PuPd_NOPULL; 
+	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_100MHz; //告诉GPIO
+	GPIO_Init(GPIOG,&GPIO_InitStructure);
+	ENABLE_485_RECV();
  
 	//串口1对应引脚复用映射
-	GPIO_PinAFConfig(GPIOC,GPIO_PinSource6,GPIO_AF_USART6); //GPIOC6复用为USART1
-	GPIO_PinAFConfig(GPIOC,GPIO_PinSource7,GPIO_AF_USART6); //GPIOC7复用为USART1
+	GPIO_PinAFConfig(GPIOA,GPIO_PinSource2,GPIO_AF_USART2); //GPIOA2复用为USART2
+	GPIO_PinAFConfig(GPIOA,GPIO_PinSource3,GPIO_AF_USART2); //GPIOA3复用为USART2
 	
 	//USART1端口配置
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7; //GPIOC6与GPIOC7
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_3; //GPIOC2与GPIOC3
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//复用功能
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;	//速度50MHz
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP; //推挽复用输出
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP; //上拉
-	GPIO_Init(GPIOC,&GPIO_InitStructure); //初始化PC6，PC7
+	GPIO_Init(GPIOA,&GPIO_InitStructure); //初始化PA2，PA3
 
    //USART1 初始化设置
 	USART_InitStructure.USART_BaudRate = bound;//波特率设置
@@ -453,96 +468,99 @@ uint8 RS232_init(uint32 bound)
 	USART_InitStructure.USART_Parity = USART_Parity_No;//无奇偶校验位
 	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;//无硬件数据流控制
 	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//收发模式
-	USART_Init(USART6, &USART_InitStructure); //初始化串口1
+	USART_Init(USART2, &USART_InitStructure); //初始化串口1
 	
-	USART_Cmd(USART6, ENABLE);  //使能串口6 
+	USART_Cmd(USART2, ENABLE);  //使能串口2 
 	
-	USART_ClearFlag(USART6, USART_FLAG_TC);
+	USART_ClearFlag(USART2, USART_FLAG_TC);
 
-#if RS232_Mode_ITorDMA == 0
-	USART_ITConfig(USART6, USART_IT_RXNE, ENABLE);//开启相关中断
+#if RS485_Mode_ITorDMA == 0
+	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);//开启相关中断
 
 	//Usart1 NVIC 配置
-	NVIC_InitStructure.NVIC_IRQChannel = USART6_IRQn;//串口1中断通道
+	NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;//串口1中断通道
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=3;//抢占优先级3
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority =3;		//子优先级3
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			//IRQ通道使能
 	NVIC_Init(&NVIC_InitStructure);	//根据指定的参数初始化VIC寄存器、
 	
 #else
-	MYDMA_Config(DMA2_Stream6,DMA_Channel_5,(u32)&USART6->DR,(u32)SendBuff,SEND_BUF_SIZE);//DMA2,STEAM7,CH4,外设为串口1,存储器为SendBuff,长度为:SEND_BUF_SIZE.
-	USART_DMACmd(USART6,USART_DMAReq_Tx,ENABLE);  //使能串口1的DMA发送 
-	MYDMA_Enable(DMA2_Stream6,1);     //开始一次DMA传输！	
+	MYDMA_Config(DMA1_Stream6,DMA_Channel_4,(u32)&USART2->DR,(u32)SendBuff,SEND_BUF_SIZE);//DMA2,STEAM7,CH4,外设为串口1,存储器为SendBuff,长度为:SEND_BUF_SIZE.
+	USART_DMACmd(USART2,USART_DMAReq_Tx,ENABLE);  //使能串口2的DMA发送 
+	MYDMA_Enable(DMA1_Stream6,1);     //开始一次DMA传输！	
 	
-	MYDMA_Config_Circular(DMA2_Stream2,DMA_Channel_5,(u32)&USART6->DR,(u32)RS232Rx,RS232_RX_MAX);//DMA2,STEAM5,CH4,外设为串口1,存储器为SendBuff,长度为:SEND_BUF_SIZE.
-	USART_DMACmd(USART6,USART_DMAReq_Rx,ENABLE);  //使能串口1的DMA发送 
-	DMA_Cmd(DMA2_Stream2, ENABLE);                      //开启DMA传输 
+	MYDMA_Config_Circular(DMA1_Stream5,DMA_Channel_4,(u32)&USART2->DR,(u32)RS485Rx,RS485_RX_MAX);//DMA2,STEAM5,CH4,外设为串口1,存储器为SendBuff,长度为:SEND_BUF_SIZE.
+	USART_DMACmd(USART2,USART_DMAReq_Rx,ENABLE);  //使能串口2的DMA接收 
+	DMA_Cmd(DMA1_Stream5, ENABLE);                      //开启DMA传输 
+	
+	//-中断配置
+	//-DMA_ITConfig(DMA1_Stream6,DMA_IT_TC,ENABLE);
 #endif
 ////////////////////////////////////////////////////////////////////////////////
-	InitFIFO(&RS232TxFifo,RS232Tx,sizeof(RS232Tx));
-	InitFIFO(&RS232RxFifo,RS232Rx,sizeof(RS232Rx));
+	InitFIFO(&RS485TxFifo,RS485Tx,sizeof(RS485Tx));
+	InitFIFO(&RS485RxFifo,RS485Rx,sizeof(RS485Rx));
 ////////////////////////////////////////////////////////////////////////////////	
 	return 0;
 }
 
 // 0 : success    1: failed
-uint8 RS232ClosePort(void)
+uint8 RS485ClosePort(void)
 {
 	// disble recv
-	USART_ITConfig(USART6, USART_IT_RXNE, DISABLE);//关闭相关中断
-	USART_DeInit(USART6);
+	USART_ITConfig(USART2, USART_IT_RXNE, DISABLE);//关闭相关中断
+	USART_DeInit(USART2);
 
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART6, DISABLE);//关闭USART2时钟
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, DISABLE);//关闭USART2时钟
 
 	return 0;
 }
 
-uint8 RS232SendData(uint8 Data)
+uint8 RS485SendData(uint8 Data)
 {
-	while((USART6->SR&0X40)==0);
-	USART_SendData(USART6,Data);
+	while((USART2->SR&0X40)==0);
+	USART_SendData(USART2,Data);
 	return 0;
 }
 
-void RS232RecData(INT8U* Dat,INT16U Len)
+void RS485RecData(INT8U* Dat,INT16U Len)
 {
-#if	RS232_Mode_ITorDMA == 0
+#if	RS485_Mode_ITorDMA == 0
   for(;Len > 0;Len--,Dat++)
   {
-    WriteFIFO(&RS232RxFifo,*Dat);
+    WriteFIFO(&RS485RxFifo,*Dat);
   }
 #else
 	INT16U temp_len;
 	
-	temp_len = DMA_GetCurrDataCounter(DMA2_Stream2);	//-得到当前还剩余多少个数据
-	WriteFIFODMA(&RS232RxFifo,Dat,temp_len);
+	temp_len = DMA_GetCurrDataCounter(DMA1_Stream5);	//-得到当前还剩余多少个数据
+	WriteFIFODMA(&RS485RxFifo,Dat,temp_len);
 #endif	
 }
 
 //串口1中断服务程序
-void USART6_IRQHandler(void)
+void USART2_IRQHandler(void)
 {
 	uint8 Res;
 	
-	if(USART_GetITStatus(USART6,USART_IT_RXNE) != RESET)  
+	if(USART_GetITStatus(USART2,USART_IT_RXNE) != RESET)  
 	{//接收中断
-		Res =USART_ReceiveData(USART6);//读取接收到的数据
-		RS232RecData(&Res,1);
+		Res =USART_ReceiveData(USART2);//读取接收到的数据
+		RS485RecData(&Res,1);
 	}
 }
 
 
 //////////////////////////////////////////////////////////////////////////////////
 
-INT16U ReadRS232Data(INT8U *data,INT16U LEN)
+INT16U ReadRS485Data(INT8U *data,INT16U LEN)
 {
 	int res,i = 0;
 	
-	if(FIFOUsed(&RS232RxFifo))
+	if(FIFOUsed(&RS485RxFifo))
 	{
 		while(LEN--)
 		{
-			res = ReadFIFO(&RS232RxFifo);
+			res = ReadFIFO(&RS485RxFifo);
 			if(res != 0xff)
 				data[i++] = res;
 			else
@@ -554,31 +572,31 @@ INT16U ReadRS232Data(INT8U *data,INT16U LEN)
 }
 
 //-0 非阻塞发送,1 阻塞发送
-void DealRS232Send(INT8U flag)
+void DealRS485Send(INT8U flag)
 {
   INT8U Data;	
 	INT16U i = 0;
-  if(FIFOEmpty(&RS232TxFifo))
+  if(FIFOEmpty(&RS485TxFifo))
   {//发送缓存空
     return;
   }
-#if RS232_Mode_ITorDMA == 1	
+#if RS485_Mode_ITorDMA == 1	
 	if(flag)
 	{
 		while(1)
 		{
-			if(DMA_GetFlagStatus(DMA2_Stream6,DMA_FLAG_TCIF6)!=RESET)//等待DMA2_Steam7传输完成
+			if(DMA_GetFlagStatus(DMA1_Stream6,DMA_FLAG_TCIF6)!=RESET)//等待DMA1_Steam6传输完成
 			{ 
-				DMA_ClearFlag(DMA2_Stream6,DMA_FLAG_TCIF6);//清除DMA2_Steam7传输完成标志 
+				DMA_ClearFlag(DMA1_Stream6,DMA_FLAG_TCIF6);//清除DMA1_Steam6传输完成标志 
 				break;
 			}
 		}
 	}
 	else
 	{
-		if(DMA_GetFlagStatus(DMA2_Stream6,DMA_FLAG_TCIF6)!=RESET)//等待DMA2_Steam7传输完成
+		if(DMA_GetFlagStatus(DMA1_Stream6,DMA_FLAG_TCIF6)!=RESET)//等待DMA1_Steam6传输完成
 		{ 
-			DMA_ClearFlag(DMA2_Stream6,DMA_FLAG_TCIF6);//清除DMA2_Steam7传输完成标志 
+			DMA_ClearFlag(DMA1_Stream6,DMA_FLAG_TCIF6);//清除DMA1_Steam6传输完成标志 
 		}
 		else
 			return;
@@ -587,15 +605,15 @@ void DealRS232Send(INT8U flag)
 #endif	
 	
 	
-  while(FIFOUsed(&RS232TxFifo))
+  while(FIFOUsed(&RS485TxFifo))
   {
-    Data = ReadFIFO(&RS232TxFifo);
-#if EN_RS232_RS485 > 0
+    Data = ReadFIFO(&RS485TxFifo);
+#if EN_RS485_RS485 > 0
     RS485SendData(&Data,1);
 #endif
 
-#if RS232_Mode_ITorDMA == 0
-    RS232SendData(Data);
+#if RS485_Mode_ITorDMA == 0
+    RS485SendData(Data);
 #else		
 		//-写入DMA缓存中
 		SendBuff[i++] = Data;
@@ -603,8 +621,8 @@ void DealRS232Send(INT8U flag)
 	
   }
 	
-#if RS232_Mode_ITorDMA == 1	
-	MYDMA_Enable(DMA2_Stream6,i);     //开始一次DMA传输！	 
+#if RS485_Mode_ITorDMA == 1	
+	MYDMA_Enable(DMA1_Stream6,i);     //开始一次DMA传输！	 
 #endif
 	
 }

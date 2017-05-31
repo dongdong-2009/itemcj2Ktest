@@ -72,6 +72,7 @@ void led0_task(void *pdata)
 	//-DPrint("\n硬件定时器测试:完成时间:%dms",5000);	//-向FIFO中写入数据.
 	//-DealDebugSend(1);
 	RS232_init(115200);
+	RS485_init(115200);
 	
 	while(1)
 	{
