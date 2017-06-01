@@ -458,6 +458,16 @@ uint8 Debug_init(uint32 bound)
 	USART_Cmd(USART1, ENABLE);  //使能串口1 
 	
 	//-USART_ClearFlag(USART1, USART_FLAG_TC);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC,ENABLE); //使能GPIOC的时钟
+	
+	GPIO_InitStructure.GPIO_Pin=GPIO_Pin_2;	// 232_pwr
+	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_OUT;//输出
+	GPIO_InitStructure.GPIO_OType=GPIO_OType_PP;  //推挽输出
+	GPIO_InitStructure.GPIO_PuPd=GPIO_PuPd_NOPULL; 
+	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_100MHz; //高速GPIO
+	GPIO_Init(GPIOC,&GPIO_InitStructure);
+	
+	GPIO_SetBits(GPIOC, GPIO_Pin_2); //232 pwr
 
 #if Debug_Mode_ITorDMA == 0
 	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);//开启相关中断

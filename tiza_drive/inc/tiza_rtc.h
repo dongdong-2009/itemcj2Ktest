@@ -1,7 +1,7 @@
 #ifndef __TIZA_RTC_H
 #define __TIZA_RTC_H	 
 
-#include "tiza_include.h"
+//-#include "tiza_include.h"
 
 	#ifdef RTC_GLOBAL
 		#define EXTERN_RTC

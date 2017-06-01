@@ -1,6 +1,12 @@
 #include "tiza_include.h"
 
-#define TEST_SD 1
+#define TEST_SD 0
+#define TEST_RTC 1
+#define TEST_GREEN 1
+
+#define S_DEBUGF DPrint
+
+INT16U TimeDelay;
 
 typedef struct
 {
@@ -88,6 +94,7 @@ void led0_task(void *pdata)
 	RTC_ST rtc;
 	INT32U ReadOffset,ReadLen,TotalLen;
 	SD_STATUS SdStatus;
+	RTC_ST TestRtcTime;	
 	
 	Debug_init(115200);
 	//-DPrint("\n硬件定时器测试:完成时间:%dms",5000);	//-向FIFO中写入数据.
@@ -577,6 +584,124 @@ void led0_task(void *pdata)
 //	DPrint("\nSD卡测试完成.\n");
 //	DealDebugSend(1);
 #endif	
+	
+	
+#if TEST_RTC > 0
+	DPrint("\n测试RTC:");
+	if(RtcInit()==0)
+	{
+		DPrint("\n----RTC初始化成功");
+	}
+	else
+	{
+		DPrint("\n----RTC初始化失败");
+	}
+	DealDebugSend(1);
+	TestRtcTime.second = 36;
+	TestRtcTime.minute = 15;
+	TestRtcTime.hour = 10;
+	TestRtcTime.day = 29;
+	TestRtcTime.month = 10;
+	TestRtcTime.year = 16;
+	if(RtcSetTime(&TestRtcTime) == 0)
+	{
+		DPrint("\n----时间设置成功,16年10月29号10:15:36");
+	}
+	else
+	{
+		DPrint("\n----时间设置失败,16年10月29号10:15:36");
+	}
+	DealDebugSend(1);
+	if(RtcGetTime(&TestRtcTime) == 0)
+	{
+		DPrint("\n----时间读取成功,时间为:%d年%d月%d日%d:%d:%d",TestRtcTime.year,TestRtcTime.month,TestRtcTime.day,TestRtcTime.hour,TestRtcTime.minute,TestRtcTime.second);
+	}
+	else
+	{
+		DPrint("\n----时间读取失败");
+	}
+	DPrint("\nRTC测试完成!\n");
+	DealDebugSend(1);
+#endif	
+	
+	
+#if TEST_GREEN > 0
+	S_DEBUGF("\n测试省电模式");
+	DealDebugSend(1);
+	TimeDelay = 0;
+//	while(1)
+	{
+//		res = GetExtPowerStatus();
+//		if(res == 0)
+		{
+//			if(res1 != res)
+//			{
+//				S_DEBUGF("\n---外部电源没电,进入休眠\n");
+//				DealDebugSend();
+//				res1 = res;
+//			}
+			while(1)
+			{
+				ClearWatchdog();
+				RtcSetAlarm(5);
+//				SystemPowerDown();
+				CpuPowerDown();
+//				DebugClosePort();
+//				IoInit();
+				Debug_init(115200);
+				S_DEBUGF("\n---休眠唤醒\n");
+				DealDebugSend(1);
+				ClearWatchdog();
+//				S_DEBUGF("\n---休眠唤醒\n");
+//				DealDebugSend(1);
+				delay_ms(10);
+//				res = GetExtPowerStatus();
+//				if(res != 0)
+//				{
+//					S_DEBUGF("\n---外部电源上电\n");
+//					DealDebugSend();
+//					InitSystem();
+//					SystemWakeup();
+//					RS232ClosePort();
+//					IoInit();
+//					RS232OpenPort(115200);
+//					SysTickConfig(_TICK_1MS);
+//					OpenTimer(100);
+//					break;
+//				}
+
+//				AdcInit();
+//				res = BattCoulometry();
+//				if(res == 1)
+//				{//电池电量低,深度睡眠不唤醒
+//					S_DEBUGF("\n---电池电量低.\n");
+//					//-return;
+//				}
+//				else if(res == 0)
+//				{
+//					S_DEBUGF("\n---电池电量高.\n");
+//				}
+//				else if(res == 2)
+//				{
+//					S_DEBUGF("\n---正在充电.\n");
+//				}
+
+//				DealDebugSend();
+			
+				}
+		}
+//		else
+//		{
+//				if(res1 != res)
+//				{
+//					S_DEBUGF("\n---外部电源有电\n");
+//					res1 = res;
+//				}
+//		}
+		DealDebugSend(1);
+	}
+		
+#endif
 	
 	while(1)
 	{
