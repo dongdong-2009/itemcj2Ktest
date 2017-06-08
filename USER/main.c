@@ -2,7 +2,7 @@
 
 #define TEST_SD 0
 #define TEST_RTC 1
-#define TEST_GREEN 1
+#define TEST_GREEN 0
 
 #define S_DEBUGF DPrint
 
@@ -643,7 +643,7 @@ void led0_task(void *pdata)
 			while(1)
 			{
 				ClearWatchdog();
-				RtcSetAlarm(5);
+				RtcSetAlarm(2);
 //				SystemPowerDown();
 				CpuPowerDown();
 //				DebugClosePort();
@@ -709,6 +709,7 @@ void led0_task(void *pdata)
 		delay_ms(300);
 		OFF_GRE_LED();
 		delay_ms(300);
+		ClearWatchdog();
 		
 		len = ReadDebugData(temp_data,20);
 		if(len)
@@ -749,7 +750,7 @@ void led0_task(void *pdata)
 void led1_task(void *pdata)
 {	  
 	
-	
+	BGprsResetPara();
 	
 	while(1)
 	{
@@ -760,6 +761,7 @@ void led1_task(void *pdata)
 		//-RS232SendData(0xAA);
 //		RS232Print("\n硬件定时器测试:完成时间:%dms",5000);	//-向FIFO中写入数据.
 //		DealRS232Send(1);
+		ExecuteModuleTask();
 	}
 }
 

@@ -6,7 +6,7 @@
 
 #include "tiza_include.h"
 
-#define Debug_Mode_ITorDMA	1	//-0 中断,1 DMA
+#define Debug_Mode_ITorDMA	0	//-0 中断,1 DMA
 
 #define DEBUG_RX_MAX    256
 #define DEBUG_TX_MAX    1024
@@ -429,7 +429,7 @@ uint8 Debug_init(uint32 bound)
 #endif	
 	
 	USART_ITConfig(USART1, USART_IT_RXNE, DISABLE);//关闭相关中断
-	USART_DeInit(USART1);
+//	USART_DeInit(USART1);
 	
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA,ENABLE); //使能GPIOA时钟
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1,ENABLE);//使能USART1时钟

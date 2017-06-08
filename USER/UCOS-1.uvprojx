@@ -309,7 +309,7 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>0x8000000</StartAddress>
+                <StartAddress>0x8020000</StartAddress>
                 <Size>0x100000</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
@@ -493,6 +493,26 @@
               <FileType>1</FileType>
               <FilePath>..\FWLIB\src\stm32f4xx_iwdg.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f4xx_rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FWLIB\src\stm32f4xx_rtc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FWLIB\src\stm32f4xx_exti.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_pwr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FWLIB\src\stm32f4xx_pwr.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FWLIB\src\stm32f4xx_adc.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -667,6 +687,21 @@
               <FileName>tiza_wd.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\tiza_drive\src\tiza_wd.c</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\tiza_rtc.c</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_power.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\tiza_power.c</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_business.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\tiza_business.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -55,7 +55,7 @@
 	#include "tiza_sys.h"
 	#include "tiza_rtc.h"
 	#include "tiza_sd.h"
-//	#include "tiza_l218.h"
+	#include "tiza_l218.h"
 //	#include "tiza_business.h"
 //	#include "tiza_spi_flash.h"	
 //	#include "tiza_protocol.h"
