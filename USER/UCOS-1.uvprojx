@@ -741,6 +741,11 @@
               <FileType>1</FileType>
               <FilePath>..\TDLIB\src\mcu_delay.c</FilePath>
             </File>
+            <File>
+              <FileName>mcu_malloc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\TDLIB\src\mcu_malloc.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

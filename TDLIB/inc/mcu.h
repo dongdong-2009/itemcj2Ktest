@@ -67,6 +67,18 @@ typedef unsigned short     int uint16;
 typedef unsigned           int uint32;
 typedef unsigned       __int64 uint64;
 
+/* exact-width unsigned integer types */
+typedef unsigned          char u8;
+typedef unsigned short     int u16;
+typedef unsigned           int u32;
+typedef unsigned       __int64 u64;
+
+/**
+  * @}
+  */
+#ifndef NULL
+#define NULL 0
+#endif
 
 /**
   * @}
