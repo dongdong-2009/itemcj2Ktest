@@ -741,6 +741,14 @@ void led0_task(void *pdata)
 			AppendQueue(&L218_AT_data, &L218_AT_data.queuenodearray[L218_AT_data.queuenodept_pt]);
 			L218_AT_data.queuenodept_pt = (L218_AT_data.queuenodept_pt + 1) % QUEUEDEEPTH;
 			
+//			FLASH_Unlock();									//解锁 
+//			FLASH_ProgramWord(0x08040000,0xaa);
+//			FLASH_ProgramWord(0x08040004,0xaa);
+////			L218_AT_data.L218_AT_buf =  (u8*)0x08040000;
+////			*L218_AT_data.L218_AT_buf = 0x55;
+//			FLASH_Lock();										//上锁
+			//-以上测试结果说明,当1变为0的时候不需要擦除,但是0变为1必须擦除
+			
 			mat_index = SubMatch("ok",2,temp_data,len);
 			if(mat_index)
 			{
