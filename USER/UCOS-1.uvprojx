@@ -365,7 +365,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\CORE;..\SYSTEM\delay;..\SYSTEM\sys;..\USER;..\FWLIB\inc;..\UCOSII\CONFIG;..\UCOSII\CORE;..\UCOSII\PORT;..\tiza_drive\inc;..\sys_code\inc;..\tiza_drive\inc\fatfs</IncludePath>
+              <IncludePath>..\CORE;..\SYSTEM\delay;..\SYSTEM\sys;..\USER;..\FWLIB\inc;..\UCOSII\CONFIG;..\UCOSII\CORE;..\UCOSII\PORT;..\tiza_drive\inc;..\sys_code\inc;..\tiza_drive\inc\fatfs;..\TDLIB\inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -512,6 +512,11 @@
               <FileName>stm32f4xx_adc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\FWLIB\src\stm32f4xx_adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FWLIB\src\stm32f4xx_flash.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -727,6 +732,16 @@
         </Group>
         <Group>
           <GroupName>sys_inc</GroupName>
+        </Group>
+        <Group>
+          <GroupName>TDLIB</GroupName>
+          <Files>
+            <File>
+              <FileName>mcu_delay.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\TDLIB\src\mcu_delay.c</FilePath>
+            </File>
+          </Files>
         </Group>
       </Groups>
     </Target>

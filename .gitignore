@@ -23,6 +23,7 @@ USER/Objects
 *.dep     
 JLinkLog.txt
 JLinkSettings.ini
+UCOS-1.uvguix.Administartor
 *.iex
 *.htm
 *.sct
