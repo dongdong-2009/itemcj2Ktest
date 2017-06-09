@@ -198,6 +198,32 @@
 		uint8   business;  	    //业务
 		uint8   ope;    		    //服务
 	}GPRS_CTR_STRUCT;
+	
+#define QUEUEMEM     uint8
+#define QUEUENODE    struct node
+#define QUEUEDEEPTH		64   
+
+//typedef struct{
+//		uint16   		len;  	    //-数据长度
+//		uint8       *rp;				//-指向实际数据体
+//}L218_AT_STRUCT;	//-L218的AT内容存储结构
+
+typedef struct node{
+//		L218_AT_STRUCT	*data;	//-指向实际数据
+		uint16   		len;  	    //-数据长度
+		uint8       *rp;				//-指向实际数据体
+    QUEUENODE  *next;	//-指向下个节点
+} NODE;
+	
+typedef struct L218_TO_MASTER_AT_STRUCT{//-存储主机接收来自L218的AT指令
+    QUEUENODE  *head;
+		QUEUENODE  *tail;
+		uint16     item;				//-链表节点数
+		//-不同应用调整
+		QUEUENODE queuenodearray[QUEUEDEEPTH];
+		uint8 queuenodept_pt;		//-指向实际带些的单元
+		uint8       *L218_AT_buf;
+}QUEUE;
 
 	typedef struct
 	{///3G模块数据结构体

@@ -547,7 +547,8 @@ void USART1_IRQHandler(void)
 INT16U ReadDebugData(INT8U *data,INT16U LEN)
 {
 	int res,i = 0;
-	
+#if 0	
+	//-普通提取内容
 	if(FIFOUsed(&DebugRxFifo))
 	{
 		while(LEN--)
@@ -556,11 +557,37 @@ INT16U ReadDebugData(INT8U *data,INT16U LEN)
 			if(res != 0xff)
 				data[i++] = res;
 			else
-				return i;	
+				break;	
 		}
 	}
-	
-	return i;	
+	return i;
+#else
+	static int pt = 0;
+	if(FIFOUsed(&DebugRxFifo))
+	{
+		while(LEN--)
+		{
+			res = ReadFIFO(&DebugRxFifo);
+			if(res != 0xff)
+			{
+				if((res == 0x0d) || (res == 0x0a))
+				{
+					if(pt != 0)
+					{
+						i = pt;
+						pt = 0;
+						break;
+					}
+				}
+				else
+					data[pt++] = res;
+			}
+			else
+				break;
+		}
+	}
+	return i;
+#endif
 }
 
 //-0 非阻塞发送,1 阻塞发送

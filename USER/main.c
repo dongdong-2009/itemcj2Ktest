@@ -7,6 +7,8 @@
 #define S_DEBUGF DPrint
 
 INT16U TimeDelay;
+QUEUE L218_AT_data;
+uint8 L218_data[256];
 
 typedef struct
 {
@@ -58,6 +60,9 @@ int main(void)
 	delay_init(168);		  															//初始化延时函数
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);			//中断分组配置
 	System_Mode_Init();   															//初始化模块
+	
+//	while(1)
+//		ClearWatchdog();
 	
 	OSInit();   
  	OSTaskCreate(start_task,(void *)0,(OS_STK *)&START_TASK_STK[START_STK_SIZE-1],START_TASK_PRIO );//创建起始任务
@@ -703,6 +708,18 @@ void led0_task(void *pdata)
 		
 #endif
 	
+	
+	
+	CreateQueue(&L218_AT_data);	//-实现了队列的初始化
+	for(i = 0;i < QUEUEDEEPTH;i++)
+	{
+			L218_AT_data.queuenodearray[i].len = 0;
+			L218_AT_data.queuenodearray[i].rp = 0;
+			L218_AT_data.queuenodearray[i].next = 0;
+	}
+	L218_AT_data.queuenodept_pt = 0;
+	L218_AT_data.L218_AT_buf = 0;
+	
 	while(1)
 	{
 		ON_GRE_LED();
@@ -711,11 +728,19 @@ void led0_task(void *pdata)
 		delay_ms(300);
 		ClearWatchdog();
 		
-		len = ReadDebugData(temp_data,20);
+		//-len = ReadDebugData(temp_data,20);
+		len = ReadDebugData(L218_data,256);
 		if(len)
 		{
 			DPrint("\nDebug接收测试:打印接收指令:%s",temp_data);
 			DealDebugSend(1);
+			L218_AT_data.L218_AT_buf =(u8*)mymalloc(0,len);						//为fatbuf申请内存
+			MemCpy(L218_AT_data.L218_AT_buf,L218_data,len);
+			L218_AT_data.queuenodearray[L218_AT_data.queuenodept_pt].len = len;
+			L218_AT_data.queuenodearray[L218_AT_data.queuenodept_pt].rp = L218_AT_data.L218_AT_buf;
+			AppendQueue(&L218_AT_data, &L218_AT_data.queuenodearray[L218_AT_data.queuenodept_pt]);
+			L218_AT_data.queuenodept_pt = (L218_AT_data.queuenodept_pt + 1) % QUEUEDEEPTH;
+			
 			mat_index = SubMatch("ok",2,temp_data,len);
 			if(mat_index)
 			{

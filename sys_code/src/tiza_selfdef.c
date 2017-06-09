@@ -1070,3 +1070,130 @@ INT32U degree_change(INT8U *str)
 
 
 ////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************
+   QUEUE
+******************************************************************/
+INT8U CreateQueue(QUEUE *que)
+{
+    if (que == 0) return FALSE;
+    que->head = 0;
+    que->tail = 0;
+    que->item = 0;
+    return TRUE;
+}
+
+INT16U QueueItem(QUEUE *que)
+{
+    if (que == 0) return 0;
+    else return (que->item);
+}
+
+QUEUEMEM *QueueHead(QUEUE *que)
+{
+    if (que == 0 || que->item == 0) return 0;
+    else return ((QUEUEMEM *)que->head);// + sizeof(NODE));
+}
+
+QUEUEMEM *QueueTail(QUEUE *que)
+{
+    if (que == 0 || que->item == 0) return 0;
+    else return ((QUEUEMEM *)que->tail);// + sizeof(NODE));
+}
+
+QUEUEMEM *QueueNext(QUEUEMEM *element)	//-传递一个指向队列节点的地址
+{
+    QUEUENODE *curnode;
+	
+    if (element == 0) return 0;
+    curnode = (QUEUENODE *)(element);// - sizeof(NODE));
+    if ((curnode = curnode->next) == 0) return 0;
+    else return ((QUEUEMEM *)curnode);// + sizeof(NODE));
+}
+
+QUEUEMEM *DelQueueElement(QUEUE *que, QUEUEMEM *element)
+{
+    QUEUENODE *curnode, *prenode, *nextnode;
+
+    if (que == 0 || element == 0) return 0;
+    if (que->item == 0) return 0;
+
+    que->item--;
+    curnode  = (QUEUENODE *)(element);// - sizeof(NODE));
+   
+    if (curnode == que->head) {
+       que->head = curnode->next; 
+       if (que->item == 0) {
+          que->tail = 0;
+          return 0;
+       } else {
+          return (QUEUEMEM *)(que->head);// + sizeof(NODE);
+       }   
+    }  
+    
+    nextnode = curnode->next;
+    prenode = que->head;
+    while (prenode != 0) {
+       if (prenode->next == curnode) {
+          break;
+       } else {
+          prenode = prenode->next;	//-换下一个节点
+       }    
+    }
+    if (prenode == 0) return 0;	//-想删除的节点不存在
+        
+    prenode->next = nextnode;
+    if (curnode == que->tail) {
+       que->tail = prenode;
+       return 0;
+    } else {
+       return ((QUEUEMEM *)nextnode);// + sizeof(NODE));
+    }              
+}
+
+// Return: Queue head 
+QUEUEMEM *DelQueueHead(QUEUE *que)
+{
+    QUEUEMEM *element;
+
+    if (que == 0 || que->item == 0) return 0;
+
+    element = (QUEUEMEM *)que->head;//+ sizeof(NODE);
+    DelQueueElement(que, element);
+    return element;
+}
+
+// Return: Queue tail 
+QUEUEMEM *DelQueueTail(QUEUE *que)
+{
+    QUEUEMEM *element;
+
+    if (que == 0 || que->item == 0) return 0;
+
+    element = (QUEUEMEM *)que->tail;// + sizeof(NODE);
+    DelQueueElement(que, element);
+    return element;
+}
+
+INT8U AppendQueue(QUEUE *que, QUEUEMEM *element)
+{
+	QUEUENODE *curnode;
+
+	if(que == 0 || element == 0)
+	{
+		return FALSE;
+	}
+	curnode = (QUEUENODE *)(element);// - sizeof(NODE));
+	if(que->item == 0)
+	{
+		que->head = curnode;
+	}
+	else
+	{
+		que->tail->next = curnode;
+	}
+	curnode->next = 0;
+	que->tail = curnode;
+	que->item++;
+	return TRUE;
+}

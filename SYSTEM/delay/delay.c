@@ -119,7 +119,8 @@ void delay_init(u8 SYSCLK)
 	fac_ms=1000/delay_ostickspersec;		//代表OS可以延时的最少单位	   
 	SysTick->CTRL|=SysTick_CTRL_TICKINT_Msk;   	//开启SYSTICK中断
 	SysTick->LOAD=reload; 					//每1/delay_ostickspersec秒中断一次	
-	SysTick->CTRL|=SysTick_CTRL_ENABLE_Msk; 	//开启SYSTICK    
+	SysTick->CTRL|=SysTick_CTRL_ENABLE_Msk; 	//开启SYSTICK 
+//-	SysTick->CTRL&=~SysTick_CTRL_ENABLE_Msk; 	//开启SYSTICK 	
 #else
 	fac_ms=(u16)fac_us*1000;				//非OS下,代表每个ms需要的systick时钟数   
 #endif
