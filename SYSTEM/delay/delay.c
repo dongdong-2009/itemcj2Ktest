@@ -5,7 +5,6 @@
 #if SYSTEM_SUPPORT_OS
 #include "includes.h"					//支持OS时，使用	  
 #endif
-#include "tiza_include.h"
 //////////////////////////////////////////////////////////////////////////////////  
 
 //修改说明
@@ -92,10 +91,7 @@ void SysTick_Handler(void)
 	if(delay_osrunning==1)					//OS开始跑了,才执行正常的调度处理
 	{
 		OSIntEnter();						//进入中断
-		OSTimeTick();       				//调用ucos的时钟服务程序 
-		//-
-		DebugRecData(NULL,0);
-		RS232RecData(NULL,0);
+		OSTimeTick();       				//调用ucos的时钟服务程序               
 		OSIntExit();       	 				//触发任务切换软中断
 	}
 }
@@ -119,8 +115,7 @@ void delay_init(u8 SYSCLK)
 	fac_ms=1000/delay_ostickspersec;		//代表OS可以延时的最少单位	   
 	SysTick->CTRL|=SysTick_CTRL_TICKINT_Msk;   	//开启SYSTICK中断
 	SysTick->LOAD=reload; 					//每1/delay_ostickspersec秒中断一次	
-	SysTick->CTRL|=SysTick_CTRL_ENABLE_Msk; 	//开启SYSTICK 
-//-	SysTick->CTRL&=~SysTick_CTRL_ENABLE_Msk; 	//开启SYSTICK 	
+	SysTick->CTRL|=SysTick_CTRL_ENABLE_Msk; 	//开启SYSTICK    
 #else
 	fac_ms=(u16)fac_us*1000;				//非OS下,代表每个ms需要的systick时钟数   
 #endif

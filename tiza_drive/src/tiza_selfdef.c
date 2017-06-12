@@ -370,7 +370,7 @@ uint16 AsciiToHex(uint8 *p_src,uint16 len,uint8 *p_dst)
 } 
 uint16 HexToAscii(uint8 *p_src,uint16 len,uint8 *p_dst)   
 {     
-    uint8 tab[]="0123456789ABCDEF";    /// 0x0-0xf的字符查找表    
+    uint8 tab[]="0123456789ABCDEF";    /// 0x0-0xf??????    
     uint16 i;
 	
     for(i=0;i<len;i++)   
@@ -546,7 +546,7 @@ INT32U GetChkSum_32(INT8U *dptr, INT16U len)
     }
     return result;
 }
-//计算系统参数的校验和
+//??????????
 INT16U GetChkSum_PAR(INT8U *dptr, INT16U len)
 {
 	INT16U i,result;
@@ -566,7 +566,7 @@ INT16U GetChkSum_PAR(INT8U *dptr, INT16U len)
 
 
 /***********************************************************************************
-    字符模式变换函数
+    ????????
 ***********************************************************************************/
 INT8U Hex_2_Bcd(INT8U hex)
 {
@@ -587,7 +587,7 @@ INT8U Bcd2Hex(INT8U bcd)
 }
 
 
-// data 转换为BCD,如果fillcout!=0，则需要填充满fillcount,不足字段补0
+// data ???BCD,??fillcout!=0,??????fillcount,?????0
 INT8U IntToBcd(INT32U  data, INT8U *bcd, INT8U fillcount)
 {
    INT8U i,index,count;
@@ -708,7 +708,7 @@ INT8U IntToString(INT8U *str,INT32U data,INT8U reflen)
        if (data < 10) break;
        else data /= 10;
     }
-    if (reflen == 0) reflen = len; // 为0时，以实际值；
+    if (reflen == 0) reflen = len; // ?0?,????;
     if (len >= reflen) len = reflen;
     else {
        for (;len<reflen;len++) tempbuf[len] = '0';
@@ -740,7 +740,7 @@ void  Mass_AsciiToDec(INT8U *dptr, INT8U *sptr, INT8U len)
     }
 }
 
-INT32U  AsciiFloat2Int(INT8U *af,INT8U len,INT8U fractsize) // 精确到小数点后fractsize位
+INT32U  AsciiFloat2Int(INT8U *af,INT8U len,INT8U fractsize) // ???????fractsize?
 {
     INT32U  result;
 	INT16U multi,fraction;
@@ -799,7 +799,7 @@ void UpCaseChar(INT8U *ptr, INT16U len)
 }
 
 /***********************************************************************************
-    搜索定位比较函数
+    ????????
 ***********************************************************************************/
 void  XOR_Opt(INT8U *dptr,INT8U *sptr,INT8U xorbase,INT16U len)
 {
@@ -992,7 +992,7 @@ BOOLEAN MatchStringBackword(INT8U *bptr, INT8U blen, INT8U *sptr,INT8U slen)
 
 
 /***********************************************************************************
-    搜索定位比较函数
+    ????????
 ***********************************************************************************/
    
 
@@ -1070,130 +1070,3 @@ INT32U degree_change(INT8U *str)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-
-/******************************************************************
-   QUEUE
-******************************************************************/
-INT8U CreateQueue(QUEUE *que)
-{
-    if (que == 0) return FALSE;
-    que->head = 0;
-    que->tail = 0;
-    que->item = 0;
-    return TRUE;
-}
-
-INT16U QueueItem(QUEUE *que)
-{
-    if (que == 0) return 0;
-    else return (que->item);
-}
-
-QUEUEMEM *QueueHead(QUEUE *que)
-{
-    if (que == 0 || que->item == 0) return 0;
-    else return ((QUEUEMEM *)que->head);// + sizeof(NODE));
-}
-
-QUEUEMEM *QueueTail(QUEUE *que)
-{
-    if (que == 0 || que->item == 0) return 0;
-    else return ((QUEUEMEM *)que->tail);// + sizeof(NODE));
-}
-
-QUEUEMEM *QueueNext(QUEUEMEM *element)	//-传递一个指向队列节点的地址
-{
-    QUEUENODE *curnode;
-	
-    if (element == 0) return 0;
-    curnode = (QUEUENODE *)(element);// - sizeof(NODE));
-    if ((curnode = curnode->next) == 0) return 0;
-    else return ((QUEUEMEM *)curnode);// + sizeof(NODE));
-}
-
-QUEUEMEM *DelQueueElement(QUEUE *que, QUEUEMEM *element)
-{
-    QUEUENODE *curnode, *prenode, *nextnode;
-
-    if (que == 0 || element == 0) return 0;
-    if (que->item == 0) return 0;
-
-    que->item--;
-    curnode  = (QUEUENODE *)(element);// - sizeof(NODE));
-   
-    if (curnode == que->head) {
-       que->head = curnode->next; 
-       if (que->item == 0) {
-          que->tail = 0;
-          return 0;
-       } else {
-          return (QUEUEMEM *)(que->head);// + sizeof(NODE);
-       }   
-    }  
-    
-    nextnode = curnode->next;
-    prenode = que->head;
-    while (prenode != 0) {
-       if (prenode->next == curnode) {
-          break;
-       } else {
-          prenode = prenode->next;	//-换下一个节点
-       }    
-    }
-    if (prenode == 0) return 0;	//-想删除的节点不存在
-        
-    prenode->next = nextnode;
-    if (curnode == que->tail) {
-       que->tail = prenode;
-       return 0;
-    } else {
-       return ((QUEUEMEM *)nextnode);// + sizeof(NODE));
-    }              
-}
-
-// Return: Queue head 
-QUEUEMEM *DelQueueHead(QUEUE *que)
-{
-    QUEUEMEM *element;
-
-    if (que == 0 || que->item == 0) return 0;
-
-    element = (QUEUEMEM *)que->head;//+ sizeof(NODE);
-    DelQueueElement(que, element);
-    return element;
-}
-
-// Return: Queue tail 
-QUEUEMEM *DelQueueTail(QUEUE *que)
-{
-    QUEUEMEM *element;
-
-    if (que == 0 || que->item == 0) return 0;
-
-    element = (QUEUEMEM *)que->tail;// + sizeof(NODE);
-    DelQueueElement(que, element);
-    return element;
-}
-
-INT8U AppendQueue(QUEUE *que, QUEUEMEM *element)
-{
-	QUEUENODE *curnode;
-
-	if(que == 0 || element == 0)
-	{
-		return FALSE;
-	}
-	curnode = (QUEUENODE *)(element);// - sizeof(NODE));
-	if(que->item == 0)
-	{
-		que->head = curnode;
-	}
-	else
-	{
-		que->tail->next = curnode;
-	}
-	curnode->next = 0;
-	que->tail = curnode;
-	que->item++;
-	return TRUE;
-}

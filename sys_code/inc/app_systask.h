@@ -1,12 +1,12 @@
-#ifndef __SYS_TASK_H
-#define __SYS_TASK_H
+#ifndef __APP_SYSTASK_H
+#define __APP_SYSTASK_H
 
 #include "stdint.h"
 
-	#ifdef SYS_TASK_GLOBAL
-		#define EXTERN_SYS_TASK
+	#ifdef APP_SYSTASK_GLOBAL
+		#define APP_EXTERN_SYSTASK
 	#else
-		#define EXTERN_SYS_TASK extern
+		#define APP_EXTERN_SYSTASK extern
 	#endif
 
 	
@@ -48,7 +48,7 @@
 
 		union08 tasks_initOK_flag;					///各任务初始化OK标志  bit0 任务1 ... bit7 任务8
 		uint8  main_power_statu;						///主电源状态     01上电1次  02断电  03再上电
-		uint8  assist_gps_flag;							///辅助定位标志		02初始     00之前定位有效   01之前定位无效
+//		uint8  assist_gps_flag;							///辅助定位标志		02初始     00之前定位有效   01之前定位无效
 		
 		uint8  ProgramUpgrade_flag;					///固件升级标志		00初始		 01有要更新升级    02执行固件下载   03写BOOT标志  04
 		uint8  GPRSreconnect2plat;					///模块断开服务器连接再重连接		00初始 01需要断开 02需要重连 03等待重连OK 04重连OK 05重启模块
@@ -58,15 +58,51 @@
 	}SYS_MISC_RUN_STRUCT;///系统运行参数
 
 	
-	EXTERN_SYS_TASK SYS_ALARM_STRUCT 				g_sysalarm_struct;
-	EXTERN_SYS_TASK SYS_MISC_RUN_STRUCT 		g_sysmiscrun_struct;		
+	APP_EXTERN_SYSTASK SYS_ALARM_STRUCT 				g_sysalarm_struct;
+	APP_EXTERN_SYSTASK SYS_MISC_RUN_STRUCT 		g_sysmiscrun_struct;		
 	
-	EXTERN_SYS_TASK	uint8 g_BeforeAlarmData[BEFORE_ALARM_MAXINDEX][512];	
+	APP_EXTERN_SYSTASK	uint8 g_BeforeAlarmData[BEFORE_ALARM_MAXINDEX][APP_EF_EVERYLSNAL_SIZE1];	
 			
 			
-	EXTERN_SYS_TASK void SetGPRSNetPara(void);
-	EXTERN_SYS_TASK void ProPutIntoAlarm(uint8 data[], uint16 len, uint8 cmd);
-	EXTERN_SYS_TASK void ReadWriteOldVaildPostion(uint8 rw);
-	EXTERN_SYS_TASK void AlarmHaveJudge(uint8 flag);
-	EXTERN_SYS_TASK void ReadyBeforeUpgrade(void);
+	APP_EXTERN_SYSTASK void SetGPRSNetPara(void);
+	APP_EXTERN_SYSTASK void AlarmHaveJudge(uint8 flag);
+	APP_EXTERN_SYSTASK void ReadyBeforeUpgrade(void);
+	
+	APP_EXTERN_SYSTASK void GetCalendarTime(uint8 date_time[],uint8 flag);
+	
+	//------------------------------------------------------------------------------------------------------//
+	
+	#define SYSM_CANRX_TIMEOUT   60		//60个计数(1s调用就60s)	
+	typedef struct{//系统程序块超时计时
+		uint16 canrx_count;									///can长期收不到数据计数
+		
+//		uint16 SavePeri_count;							///周期保存计时
+		uint16 NorUpPeri_count;							///正常周期上传信息计时
+//		uint16 AlrUpPeri_count;							///报警上传间隔计时
+//		uint16 TAckTim_count;								///终端应答超时时间					FF无效		
+		uint16 PAckTim_count;								///平台应答超时时间					FF无效
+		uint16 NLogTim_count;								///三次登录失败后重新登录时间间隔	
+		uint8  upheart_count;								///系统上传心跳计时
+	}SYSM_TIMEOUT_STRUCT;
+	
+//	#define SYSM_ON							1
+//	#define SYSM_OFF						0
+//	typedef struct{//系统程序块是否启用 开关
+//		uint8 canrx_switch;										//接收中断
+//		uint8 GPRSPacketTx_switch;						//GPRS无需应答式发送 或 打包给周期发送
+//		uint8 GPRSPeriodTx_switch;						//GPRS需要应答式发送
+//		uint8 ADC_switch;											//ADC转换中断
+//		uint8 extflash_w_switch;							//片外flash擦写
+//		uint8 flash_w_switch;									//片内flash擦写
+//	}SYSM_ON_OFF_STRUCT;
+	
+	APP_EXTERN_SYSTASK SYSM_TIMEOUT_STRUCT g_sysm_timeout_struct;
+//	APP_EXTERN_SYSTASK SYSM_ON_OFF_STRUCT 	g_sysm_on_off_struct;
+	
+	
+	APP_EXTERN_SYSTASK uint16 adc_result[2];
+	
+	
+	APP_EXTERN_SYSTASK void SysPara_Init(void);
+	
 #endif

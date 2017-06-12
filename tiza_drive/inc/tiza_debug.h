@@ -9,6 +9,12 @@
 		#define EXTERN_DEBUG extern
 	#endif
 
+		
+		
+		
+		
+		
+		
 /*****************************************************************
 *                  DEFINE FIFO STRUCT
 ******************************************************************/
@@ -39,12 +45,15 @@ INT16U  FIFOUsed(FIFO *fifo);
 	EXTERN_DEBUG uint8 Debug_init(uint32 bound);
 	EXTERN_DEBUG uint8 DebugClosePort(void);
 	EXTERN_DEBUG uint8 DebugSendData(uint8 Data);
+	EXTERN_DEBUG uint8 DebugSendDatas(uint8 Data[], uint16 len);
 	EXTERN_DEBUG INT16U ReadDebugData(INT8U *data,INT16U LEN);
-
+	EXTERN_DEBUG void DebugRecData(INT8U* Dat,INT16U Len);
 	EXTERN_DEBUG void DPrint(const char *fmt, ...);
 	EXTERN_DEBUG void DealDebugSend(INT8U flag);
 	
-	/* Î«²ñ¶¨Òå void RS232RecData(uint8 *Data, uint8 Len) */
+
+
+	
 	
 #endif
 

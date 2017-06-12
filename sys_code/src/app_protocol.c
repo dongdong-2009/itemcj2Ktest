@@ -1,5 +1,5 @@
-#define PROTOCOL_GLOBAL
-#define PROTOCOL_DEBUG
+#define APP_PROTOCOL_GLOBAL
+#define APP_PROTOCOL_DEBUG
 
 
 #define PRO0203_NEEEDACK   0
@@ -7,7 +7,6 @@
 #include "tiza_include.h"
 
 uint8 Packet_data[TMP_BUFF_MAXLEN];
-static void ProPutIntoLsnal(uint8 data[],uint16 len,uint8 cmd);
 
 /******************************************************
 //应用常规参数初始化
@@ -28,7 +27,6 @@ void ProPara_Init(void)
 	//======================================//
 	g_provbattsys_union.Item.sigbatt_num   	 = PRO_SIGBATT_MAXNUMBER;// 单体个数初始化     后从CAN获得
 	g_protbattsys_union.Item.btprobe_num		 = PRO_BTPROBE_MAXNUMBER;// 温度探针个数初始化 后从CAN获得
-	memset(can_struct.rx_can_buf_flag, 0xFF, CAN_RX_ID_NUM);				 // 清CAN接收buff标志
 	
 	//======================================//
 	g_proupgread_struct.flag 				= 0;							//自添加，1需要升级 2正在升级 0无效
@@ -69,7 +67,7 @@ void SetPara2FactoryReset(void)
 	g_propara_union.Item.PDomain[1] = 94;
 	g_propara_union.Item.PDomain[2] = 153;
 	g_propara_union.Item.PDomain[3] = 146;	
-	g_propara_union.Item.PPort			= 20002;//27055;//		//公共平台端口	
+	g_propara_union.Item.PPort			= 21000;//27055;//		//公共平台端口	
 	g_propara_union.Item.Monitor		= 0xFF;							//是否抽样检测中	
 	
 	for(i=4; i<PRO_DOMAINLEN_MAX;i++){
@@ -83,157 +81,7 @@ void SetPara2FactoryReset(void)
 		
 }
 
-/******************************************************
-//32960协议使用参数读写函数
-******************************************************/
-void ProWrite_SysPara(void)
-{
-	if(g_sysm_on_off_struct.flash_w_switch	== SYSM_OFF){	
-		return ;
-	}
-	FlashErase(SYS_SAVEPARA_INDEXPAGE);
-	g_propara_union.Item.check = U8SumCheck(g_propara_union.arry,PRO_PARA_UNION_LEN-1);
-	FlashWrite(SYS_SAVEPARA_INDEXPAGE, g_propara_union.arry, PRO_PARA_UNION_LEN);
-}
-void ProRead_SysPara(void)
-{
-	FlashRead(SYS_SAVEPARA_INDEXPAGE, g_propara_union.arry, PRO_PARA_UNION_LEN);
-
-	if(g_propara_union.Item.check != U8SumCheck(g_propara_union.arry,PRO_PARA_UNION_LEN-1)){
-		#ifdef PROTOCOL_DEBUG
-		LocalUartFixedLenSend((uint8*)"ProRead_SysPara ERROR\r\n", 23);
-		#endif
-		// 恢复出厂并保存
-		SetPara2FactoryReset();
-		ProWrite_SysPara();
-	}
-	memcpy(g_propara_union.Item.g_para_HDVers,"Dh700",5);	
-	memcpy(g_propara_union.Item.g_para_SFVers,"DsB23",5);	
-}
 	
-/******************************************************
-//盲区补偿相关函数
-******************************************************/	
-static void ProLsnalDataInit(void)
-{
-	g_syslsnal_struct.data[0] = VALID_VAL_2A;	///有效标志
-	g_syslsnal_struct.data[1] = 0x00;					///总长度,2字节,从标志开始，不含1字节校验
-	g_syslsnal_struct.data[2] = 0x04;					///
-	g_syslsnal_struct.data[3] = 0x00;					///指令
-	g_syslsnal_struct.data[4] = 0x2E;					///校验
-}
-void ProLsnalHeadTailSave(void)			
-{///保存页码
-	uint8  data[9],res;
-
-	data[0] = (uint8)(g_syslsnal_struct.headindex >> 24) & 0xFF;
-	data[1] = (uint8)(g_syslsnal_struct.headindex >> 16) & 0xFF;
-	data[2] = (uint8)(g_syslsnal_struct.headindex >>  8) & 0xFF;
-	data[3] = (uint8) g_syslsnal_struct.headindex        & 0xFF;
-	data[4] = (uint8)(g_syslsnal_struct.tailindex >> 24) & 0xFF;
-	data[5] = (uint8)(g_syslsnal_struct.tailindex >> 16) & 0xFF;
-	data[6] = (uint8)(g_syslsnal_struct.tailindex >>  8) & 0xFF;
-	data[7] = (uint8) g_syslsnal_struct.tailindex        & 0xFF;
-	
-	data[8] = U8SumCheck(data,8);
-	res = ExteFlashEraseSector(SYS_LSNAL_SPIINDEXSECTOR);	
-	if(!res){// 失败
-		return;
-	}
-	ExteFlashWrite(SYS_LSNAL_SPIINDEX_ADDR, data, 9);
-}
-static void ProLsnalPageSave(uint8 data[],uint16 len)
-{
-	uint8  res;
-	uint16 sector;
-	uint32 addr;
-	
-	//满一段
-	if((g_syslsnal_struct.headindex&0x07)==0){	//FLASH擦除 4K字节/段 即512*8
-		sector = (uint16)(g_syslsnal_struct.headindex >> 3);// /8;
-		res = ExteFlashEraseSector(sector);
-		if(!res){// 失败
-			goto RETURN_LAB;
-		}
-	}
-	
-	//满一包
-	addr = SYS_LSNAL_SPISTART_ADDR + g_syslsnal_struct.headindex*LSNAL_PAGE_SIZE ;
-	res = ExteFlashWrite(addr, data, len);
-	if(!res){// 失败
-		goto RETURN_LAB;
-	}
-	
-	g_syslsnal_struct.headindex = (g_syslsnal_struct.headindex+1)%SYS_LSNAL_SPIMAXINDEX;
-	if(g_syslsnal_struct.headindex == g_syslsnal_struct.tailindex){
-		//tail前移8包即整段擦除时舍掉其余7包数据；若要不舍需另外开一段临时保存旧数据，这样会增加擦除次数
-		g_syslsnal_struct.tailindex = (g_syslsnal_struct.tailindex+8)%SYS_LSNAL_SPIMAXINDEX;
-	}
-	
-	ProLsnalHeadTailSave();
-	
-	g_syslsnal_struct.data[0] = INVALID_VAL_FF;
-RETURN_LAB:
-	return;
-}
-static void ProLsnalDataSave(uint8 data[],uint16 len,uint8 cmd)
-{	
-	if(cmd == PRO_UP_LSNAL_INFO_ID){									// 盲区保存过不会再保存
-		goto RETURN_LAB;
-	}	
-	
-	//512字节放一条数据 与之前有区别
-	//有效标志单条长度*2 单条命令 ... 校验
-	if(g_syslsnal_struct.data[0] != VALID_VAL_2A){		// 从无到有存入时需初始化
-		g_syslsnal_struct.data[0] = VALID_VAL_2A;
-		g_syslsnal_struct.data[1] = len >> 8;
-		g_syslsnal_struct.data[2] = len & 0xFF;
-		g_syslsnal_struct.data[3] = cmd;
-		
-		MemCpy(g_syslsnal_struct.data+4, data, len);	
-		g_syslsnal_struct.data[len+4] = U8SumCheck(g_syslsnal_struct.data,len+4);
-		ProLsnalPageSave(g_syslsnal_struct.data,len+5);	
-	}
-	
-RETURN_LAB:
-	return;
-}
-static void ProPutIntoLsnal(uint8 data[],uint16 len,uint8 cmd)
-{
-	switch(cmd){
-		case PRO_UP_REAL_INFO_ID:
-		case PRO_UP_LSNAL_INFO_ID:{
-			if(cmd == PRO_UP_LSNAL_INFO_ID){	//清正在发送标志
-				g_pro_struct.tx_one_lsnal_falg = 0; 
-			}
-			ProLsnalDataSave(data,len,cmd);///写盲区
-			break;
-		}
-		case PRO_UP_LOGIN_ID:{
-//			gsm_misc_struct.cur_mode = POWER_INIT_MODE;
-			break;
-		}
-		default:		break;
-	}
-}
-/******************************************************
-//系统退出前盲区补偿
-******************************************************/	
-void ProLsnalSysExit(void)
-{
-	uint8 i;
-	
-	for(i=0;i<PRO_MAX_TX_BUF_ARRAY;i++){
-		if(g_pro_struct.tx_struct.re_tx_full_flag[i] == TRUE){
-			g_pro_struct.tx_struct.re_tx_full_flag[i] = FALSE;
-			ProPutIntoLsnal(g_pro_struct.tx_struct.re_tx_buf[i]+PRO_DATA_INDEX,
-							g_pro_struct.tx_struct.re_tx_len[i]-PRO_DATA_INDEX-1,
-							g_pro_struct.tx_struct.re_tx_buf[i][PRO_CMD_INDEX]);
-		}
-	}	
-}
-
-
 
 /******************************************************
 //上行通讯函数
@@ -292,7 +140,9 @@ static uint8 ProMotor(uint8 data[])
 	
 	return index;
 }
-/*static uint8 ProFuelCell(uint8 data[])
+#if 0
+// 暂无
+static uint8 ProFuelCell(uint8 data[])
 {
 	uint8 index=0;
 	
@@ -335,7 +185,8 @@ static uint8 ProEngine(uint8 data[])
 	data[index++] = g_proengine_union.arry[2];
 	
 	return index;
-}*/
+}
+#endif
 static uint8 ProPostion(uint8 data[])
 {
 	uint8 index=0;
@@ -402,43 +253,59 @@ static uint8 ProAlarm(uint8 data[])
 	data[index++] = g_proalarm_union.arry[0];
 	data[index++] = g_proalarm_union.Item.storagenum;
 	for(i=0;i < g_proalarm_union.Item.storagenum;i++){
-//		data[index++] = (uint8)((g_storage_alr[i]>>24) & 0xFF);	
-//		data[index++] = (uint8)((g_storage_alr[i]>>16) & 0xFF);
-//		data[index++] = (uint8)((g_storage_alr[i]>> 8) & 0xFF);
-//		data[index++] = (uint8)( g_storage_alr[i]      & 0xFF);
+		#if 0
+		data[index++] = (uint8)((g_storage_alr[i]>>24) & 0xFF);	
+		data[index++] = (uint8)((g_storage_alr[i]>>16) & 0xFF);
+		data[index++] = (uint8)((g_storage_alr[i]>> 8) & 0xFF);
+		data[index++] = (uint8)( g_storage_alr[i]      & 0xFF);
+		#else
 		data[index++] = (uint8)((g_storage_alr[0]>>24) & 0xFF);	
 		data[index++] = (uint8)((g_storage_alr[0]>>16) & 0xFF);
 		data[index++] = (uint8)((g_storage_alr[0]>> 8) & 0xFF);
 		data[index++] = (uint8)( g_storage_alr[0]      & 0xFF);
+		#endif
 	}
 	data[index++] = g_proalarm_union.Item.motornum;
 	for(i=0;i < g_proalarm_union.Item.motornum;i++){
-//		data[index++] = (uint8)((g_motro_alr[i]>>24) & 0xFF);	
-//		data[index++] = (uint8)((g_motro_alr[i]>>16) & 0xFF);
-//		data[index++] = (uint8)((g_motro_alr[i]>> 8) & 0xFF);
-//		data[index++] = (uint8)( g_motro_alr[i]      & 0xFF);
+		#if 0
+		data[index++] = (uint8)((g_motro_alr[i]>>24) & 0xFF);	
+		data[index++] = (uint8)((g_motro_alr[i]>>16) & 0xFF);
+		data[index++] = (uint8)((g_motro_alr[i]>> 8) & 0xFF);
+		data[index++] = (uint8)( g_motro_alr[i]      & 0xFF);
+		#else
 		data[index++] = (uint8)((g_motro_alr[0]>>24) & 0xFF);	
 		data[index++] = (uint8)((g_motro_alr[0]>>16) & 0xFF);
 		data[index++] = (uint8)((g_motro_alr[0]>> 8) & 0xFF);
 		data[index++] = (uint8)( g_motro_alr[0]      & 0xFF);
+		#endif
 	}
 	data[index++] = g_proalarm_union.Item.enginenum;
 	for(i=0;i < g_proalarm_union.Item.enginenum;i++){
-		data[index++] = 0;//(uint8)((g_engine_alr[i]>>24) & 0xFF);	
-		data[index++] = 0;//(uint8)((g_engine_alr[i]>>16) & 0xFF);
-		data[index++] = 0;//(uint8)((g_engine_alr[i]>> 8) & 0xFF);
-		data[index++] = 0;//(uint8)( g_engine_alr[i]      & 0xFF);
+		#if 0
+		data[index++] = (uint8)((g_engine_alr[i]>>24) & 0xFF);	
+		data[index++] = (uint8)((g_engine_alr[i]>>16) & 0xFF);
+		data[index++] = (uint8)((g_engine_alr[i]>> 8) & 0xFF);
+		data[index++] = (uint8)( g_engine_alr[i]      & 0xFF);
+		#else
+		data[index++] = 0;
+		data[index++] = 0;
+		data[index++] = 0;
+		data[index++] = 0;
+		#endif
 	}
 	data[index++] = g_proalarm_union.Item.othersnum;
 	for(i=0;i < g_proalarm_union.Item.othersnum;i++){
-//		data[index++] = (uint8)((g_others_alr[i]>>24) & 0xFF);	
-//		data[index++] = (uint8)((g_others_alr[i]>>16) & 0xFF);
-//		data[index++] = (uint8)((g_others_alr[i]>> 8) & 0xFF);
-//		data[index++] = (uint8)( g_others_alr[i]      & 0xFF);
+		#if 0
+		data[index++] = (uint8)((g_others_alr[i]>>24) & 0xFF);	
+		data[index++] = (uint8)((g_others_alr[i]>>16) & 0xFF);
+		data[index++] = (uint8)((g_others_alr[i]>> 8) & 0xFF);
+		data[index++] = (uint8)( g_others_alr[i]      & 0xFF);
+		#else
 		data[index++] = (uint8)((g_others_alr[0]>>24) & 0xFF);	
 		data[index++] = (uint8)((g_others_alr[0]>>16) & 0xFF);
 		data[index++] = (uint8)((g_others_alr[0]>> 8) & 0xFF);
 		data[index++] = (uint8)( g_others_alr[0]      & 0xFF);
+		#endif
 	}
 	
 	return index;
@@ -516,8 +383,10 @@ uint16 Pro_RealTime_Data(uint8 data[])
 	
 	p += ProVehicle(p);					//01		21
 	p += ProMotor(p);						//02		14
-//	p += ProFuelCell(p);				//03		
-//	p += ProEngine(p);					//04
+	#if 0
+	p += ProFuelCell(p);				//03		
+	p += ProEngine(p);					//04
+	#endif
 	p += ProPostion(p);					//05		10
 	p += ProExtreme(p);					//06		15
 	p += ProAlarm(p);						//07		10
@@ -568,7 +437,7 @@ void ProUpRealFormation(uint8 mode)
 	// 03 盲区补发数据
 static void ProUpLsnalFormation(void)	
 {
-	uint8  tmpdata[LSNAL_PAGE_SIZE],index;
+	uint8  tmpdata[APP_EF_EVERYLSNAL_SIZE1],index;
 	uint16 tmplen;
 	uint32 basicaddr;
 
@@ -579,9 +448,9 @@ static void ProUpLsnalFormation(void)
 	}
 	
 	if(g_syslsnal_struct.tailindex != g_syslsnal_struct.headindex){
-		basicaddr = SYS_LSNAL_SPISTART_ADDR + g_syslsnal_struct.tailindex * LSNAL_PAGE_SIZE;
-		//if(ExteFlashRead(basicaddr, &tmpdata[index], LSNAL_PAGE_SIZE) == 0){   实际数据小与512-25
-		if(ExteFlashRead(basicaddr, &tmpdata[index], LSNAL_PAGE_SIZE-PRO_DATA_INDEX-1) == 0){
+		basicaddr = APP_EF_LSNAL_START_ADD + g_syslsnal_struct.tailindex * APP_EF_EVERYLSNAL_SIZE1;
+		//if(ExteFlashRead(basicaddr, &tmpdata[index], APP_EF_EVERYLSNAL_SIZE1) == 0){   实际数据小与512-25
+		if(ExteFlashRead(basicaddr, &tmpdata[index], APP_EF_EVERYLSNAL_SIZE1-PRO_DATA_INDEX-1) == 0){
 			goto RETURN_LAB;
 		}
 		
@@ -589,7 +458,7 @@ static void ProUpLsnalFormation(void)
 		if(tmpdata[index+0]!=VALID_VAL_2A || tmplen>=512){
 		// 如果此条标志不对 越界 回到=head
 			g_syslsnal_struct.tailindex = g_syslsnal_struct.headindex;
-			ProLsnalHeadTailSave();
+			ExtFlashLsnalHeadTailSave();
 			goto RETURN_LAB;
 		}		
 		if(tmpdata[index+tmplen] != U8SumCheck(&tmpdata[index], tmplen)){
@@ -610,7 +479,7 @@ static void ProUpLsnalFormation(void)
 		ProPacket(tmpdata, tmplen+1, PRO_UP_LSNAL_INFO_ID, FALSE, 0);
 
 		g_syslsnal_struct.tailindex = (g_syslsnal_struct.tailindex+1)%SYS_LSNAL_SPIMAXINDEX;
-		ProLsnalHeadTailSave();				
+		ExtFlashLsnalHeadTailSave();				
 		g_pro_struct.tx_one_lsnal_falg = 0; 
 		#endif
 		
@@ -632,7 +501,7 @@ void ProUpLogin(void)
 	tx_buf[6] = g_prologin_union.arry[1]; 		//大端模式，高位在前
 	tx_buf[7] = g_prologin_union.arry[0]; 
 	//其他登录信息
-	memcpy(g_prologin_union.Item.SIM_ICCID, g_ICCID, 20);	
+	memcpy(g_prologin_union.Item.SIM_ICCID, g_dri_ICCID, 20);	
 	memcpy(&tx_buf[8],&g_prologin_union.arry[2],22);		
 	//可充电储能系统编码 暂时都不上
 	
@@ -657,23 +526,12 @@ void ProUpHeartBeat(void)
 {
 	uint8 tx_buf[50],tx_len;
 	
-//	ProConstructFrameHead(tx_buf, 0, PRO_UP_HEARTBEAT_ID);
-//	ProConstructFrameTail(tx_buf, PRO_DATA_INDEX);
-//	tx_len = PRO_DATA_INDEX + 1;
-//	ProPacket(tx_buf, tx_len, (uint8)PRO_UP_HEARTBEAT_ID,FALSE, 0);
-	
 	ProPacket(tx_buf, 0, (uint8)PRO_UP_HEARTBEAT_ID,TRUE, 0);
 }
 	// 08 与平台校时	
 void ProUpCheckTime(void)
 {
 	uint8 tx_buf[50],tx_len;
-	
-//	ProConstructFrameHead(tx_buf, 0, PRO_UP_CHECKTIME_ID);
-//	ProConstructFrameTail(tx_buf, PRO_DATA_INDEX);
-//	tx_len = PRO_DATA_INDEX + 1;
-//	ProPacket(tx_buf, tx_len, (uint8)PRO_UP_CHECKTIME_ID,FALSE, 0);
-	
 	
 	ProPacket(tx_buf, 0, (uint8)PRO_UP_CHECKTIME_ID,TRUE, 0);
 }
@@ -1002,7 +860,7 @@ RETURN_LAB1:
 //				if(g_pro_struct.tx_lsnal_data_flag == FALSE){
 					//普通盲区补发
 					g_syslsnal_struct.tailindex = (g_syslsnal_struct.tailindex+1)%SYS_LSNAL_SPIMAXINDEX;
-					ProLsnalHeadTailSave();				
+					ExtFlashLsnalHeadTailSave();				
 					g_pro_struct.tx_one_lsnal_falg = 0; 
 //				}
 			}
@@ -1089,7 +947,8 @@ static void ProDownSetPara(uint8 data[],uint8 len)
 				break;
 			}
 			case PRO_PARA_DOMAIN_ID:{
-/* 				for(tmp=0;tmp < PRO_DOMAINLEN_MAX;tmp++){
+				#if 0 
+ 				for(tmp=0;tmp < PRO_DOMAINLEN_MAX;tmp++){
 					if(*(p+tmp) == 0){// qlj 若服务器传来的域名字符串以0结尾?
 						p += (tmp+1);
 						break;
@@ -1099,13 +958,14 @@ static void ProDownSetPara(uint8 data[],uint8 len)
 				if(tmp != PRO_DOMAINLEN_MAX){
 					g_propara_union.Item.DomainLen = tmp;
 					memcpy(g_propara_union.Item.Domain, tmp_data, g_propara_union.Item.DomainLen);	
-				} */
-				
+				} 
+				#else
 				//若设置域名前设置域名长度可以直接用
 				if(g_propara_union.Item.DomainLen <= PRO_DOMAINLEN_MAX){	//防止越界
 					memcpy(g_propara_union.Item.Domain, p, g_propara_union.Item.DomainLen);
 					p += g_propara_union.Item.DomainLen;
 				}
+				#endif
 				else 
 					goto RETURN_LAB;		
 				break;
@@ -1162,7 +1022,8 @@ static void ProDownSetPara(uint8 data[],uint8 len)
 				break;
 			}
 			case PRO_PARA_PDOMAIN_ID:{
-/* 				for(tmp=0;tmp < PRO_DOMAINLEN_MAX;tmp++){
+				#if 0
+ 				for(tmp=0;tmp < PRO_DOMAINLEN_MAX;tmp++){
 					if(*(p+tmp) == 0){// qlj 若服务器传来的域名字符串以0结尾?
 						p += (tmp+1);
 						break;
@@ -1172,13 +1033,14 @@ static void ProDownSetPara(uint8 data[],uint8 len)
 				if(tmp != PRO_DOMAINLEN_MAX){
 					g_propara_union.Item.PDomainLen = tmp;
 					memcpy(g_propara_union.Item.PDomain, tmp_data, g_propara_union.Item.PDomainLen);	
-				} */
-				
+				} 
+				#else
 				//若设置域名前设置域名长度可以直接用
 				if(g_propara_union.Item.PDomainLen <= PRO_DOMAINLEN_MAX){	//防止越界
 					memcpy(g_propara_union.Item.PDomain, p, g_propara_union.Item.PDomainLen);
 					p += g_propara_union.Item.PDomainLen;
 				}
+				#endif
 				else 
 					goto RETURN_LAB;	
 				break;
@@ -1335,9 +1197,7 @@ void ProPacket(uint8 tx_data[],uint16 tx_len,uint8 tx_cmd,uint8 ack_flag, uint8 
 
 	p = Packet_data;
 
- 	if(g_sysm_on_off_struct.GPRSPacketTx_switch == SYSM_OFF){//不起用
-		goto RETURN_LAB;
-	} 
+	
  	if(mode == 0x01){																					//存盲区
 		goto LSNAL_LAB;
 	} 
@@ -1347,7 +1207,7 @@ void ProPacket(uint8 tx_data[],uint16 tx_len,uint8 tx_cmd,uint8 ack_flag, uint8 
 		if(g_gprs_data_struct.sendDataStatus == GPRS_SENDDATA_IDLE){
 			g_gprs_data_struct.SendDataLen = tx_len;
 			memcpy(GPRStestdata, tx_data, g_gprs_data_struct.SendDataLen);
-			g_pro_struct.updata_noacksend = 1;					
+			g_pro_struct.updata_noacksend = 1;			
 			
 			if(g_EnableHeart == 0){	
 				g_sysm_timeout_struct.upheart_count 		= 0;		///上行心跳计时清0
@@ -1398,7 +1258,7 @@ void ProPacket(uint8 tx_data[],uint16 tx_len,uint8 tx_cmd,uint8 ack_flag, uint8 
 	return;
 	
 LSNAL_LAB:
-		ProPutIntoLsnal(tx_data,tx_len,tx_cmd);//纯数据
+		PutIntoExtFlashLsnal(tx_data,tx_len,tx_cmd);//纯数据
 
 RETURN_LAB:
 	return;
@@ -1413,9 +1273,6 @@ void ProPeriodTx(uint16 past_sec)
 		uint8 str_len;
 		uint16 j;
 	#endif
-	if(g_sysm_on_off_struct.GPRSPeriodTx_switch == SYSM_OFF){
-		return;
-	}
 	
 	for(i=0;i<PRO_MAX_TX_BUF_ARRAY;i++){										//轮询重发buff
 		if(g_pro_struct.tx_struct.re_tx_sec_counter[i]>=g_pro_struct.tx_struct.re_tx_time[i] && g_pro_struct.tx_struct.re_tx_time[i]!=0){ //重发机制		
@@ -1445,7 +1302,7 @@ void ProPeriodTx(uint16 past_sec)
 					}
 					else{	
 						g_pro_struct.tx_struct.re_tx_full_flag[i] = FALSE;
-						ProPutIntoLsnal(g_pro_struct.tx_struct.re_tx_buf[i]+PRO_DATA_INDEX,
+						PutIntoExtFlashLsnal(g_pro_struct.tx_struct.re_tx_buf[i]+PRO_DATA_INDEX,
 										g_pro_struct.tx_struct.re_tx_len[i]-PRO_DATA_INDEX-1,
 										g_pro_struct.tx_struct.re_tx_buf[i][PRO_CMD_INDEX]);
 					}
@@ -1462,7 +1319,7 @@ void ProPeriodTx(uint16 past_sec)
 	
 	
 ///检查有无盲区数据发送
-	if((g_pro_struct.login_center_flag == TRUE)){
+	if(g_pro_struct.login_center_flag == TRUE){
 		#if PRO0203_NEEEDACK==1
 		ProUpLsnalFormation();
 		#else
@@ -1512,10 +1369,6 @@ void ProProcess(uint8 data[], uint16 len, uint16 colon)
 {
 	uint8* p;
 	uint16 tmp_len;
-	#ifdef PROTOCOL_DEBUG
-		char str_ch[10];
-		uint8 str_len;
-	#endif
 	
 	p = data;
 RETURN_LAB:
@@ -1537,10 +1390,9 @@ RETURN_LAB:
 		ProDownAck(p,tmp_len);
 	}
 	else{
-		#ifdef PROTOCOL_DEBUG
-			LocalUartFixedLenSend((uint8*)"\r\n ProProcess ProDown ID = ", 27);
-			str_len = sprintf(str_ch,"%d ",p[PRO_CMD_INDEX]);
-			LocalUartFixedLenSend((uint8*)str_ch,str_len);
+		#ifdef TIZA_L218OPT_DEBUG
+			DPrint("\n ProProcess ProDown ID = ",p[PRO_CMD_INDEX]);
+			DealDebugSend(1);
 		#endif
 	
 		switch(p[PRO_CMD_INDEX]){

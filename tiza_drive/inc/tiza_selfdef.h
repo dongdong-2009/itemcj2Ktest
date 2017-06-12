@@ -54,7 +54,7 @@ void  XOR_Opt(INT8U *dptr,INT8U *sptr,INT8U xorbase,INT16U len);
 
 
 //int ExecEntry(INT16U index, const EXECENTRY_ST *funcentry, INT16U num);
-INT32U  AsciiFloat2Int(INT8U *af,INT8U len,INT8U fractsize); // 精确到小数点后fractsize位;
+INT32U  AsciiFloat2Int(INT8U *af,INT8U len,INT8U fractsize); // ??è·μ?D?êyμ?oófractsize??;
 
 INT8U   SemiHexToChar(INT8U sbyte);
 INT8U   CharToSemiHex(INT8U schar);

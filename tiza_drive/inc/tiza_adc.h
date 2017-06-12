@@ -1,17 +1,19 @@
+
 #ifndef __TIZA_ADC_H
-#define __TIZA_ADC_H	
+#define __TIZA_ADC_H
 
-#include "tiza_include.h"
-
-	#ifdef ADC_GLOBAL
-		#define EXTERN_ADC
+	#ifdef TIZA_ADC_GLOBAL
+		#define TIZA_ADC_EXTERN
 	#else
-		#define EXTERN_ADC extern
+		#define TIZA_ADC_EXTERN extern
 	#endif
+	
+	#include "stm32f4xx.h"
+	
+	
 
- 							   
-EXTERN_ADC void AdcInit(void); 						//ADC通道初始化
-EXTERN_ADC uint16  ReadBatAdc(void); 				//获得电池通道的ADC值 
-EXTERN_ADC float  ReadBatVoltage(void); 			//获得电池电压 单位:V
-
+	TIZA_ADC_EXTERN u16 g_Adc1Dma2_buff[16];
+	
+	TIZA_ADC_EXTERN void Tiza_AdcInit(void);
+		
 #endif

@@ -1,28 +1,12 @@
 #include "sdio_sdcard.h"
 #include "string.h"	 
-#include "tiza_sys.h"	 
+#include "ucos_ii.h"
+#include "os_cpu.h"
+#include "os_cfg.h"
 
-//////////////////////////////////////////////////////////////////////////////////	 
-//本程序只供学习使用，未经作者许可，不得用于其它任何用途
-//ALIENTEK STM32F407开发板
-//SDIO 驱动代码	   
-//正点原子@ALIENTEK
-//技术论坛:www.openedv.com
-//创建日期:2014/5/14
-//版本：V1.2
-//版权所有，盗版必究。
-//Copyright(C) 广州市星翼电子科技有限公司 2014-2024
-//All rights reserved		
-//********************************************************************************
-//修改说明
-//V1.1	20140522
-//1,加入超时判断,解决轮询接收死机的问题.
-//V1.2 	20140715
-//1,新增SD_GetState和SD_SendStatus函数.
-////////////////////////////////////////////////////////////////////////////////// 	 
-
-#define INTX_DISABLE OS_ENTER_CRITICAL
-#define INTX_ENABLE OS_EXIT_CRITICAL
+/// 这里使用临界 ， 原先使用开关中断sys.c中汇编
+#define INTX_DISABLE() 	OS_ENTER_CRITICAL()
+#define INTX_ENABLE() 	OS_EXIT_CRITICAL()
 
 /*用于sdio初始化的结构体*/
 SDIO_InitTypeDef SDIO_InitStructure;
@@ -556,6 +540,7 @@ SD_Error SD_SelectDeselect(u32 addr)
 //blksize:块大小
 SD_Error SD_ReadBlock(u8 *buf,long long addr,u16 blksize)
 {	  
+	OS_CPU_SR  cpu_sr = 0u;
 	SD_Error errorstatus=SD_OK;
 	u8 power;
   u32 count=0,*tempbuff=(u32*)buf;//转换为u32指针 
@@ -682,6 +667,7 @@ SD_Error SD_ReadBlock(u8 *buf,long long addr,u16 blksize)
 __align(4) u32 *tempbuff;
 SD_Error SD_ReadMultiBlocks(u8 *buf,long long addr,u16 blksize,u32 nblks)
 {
+	OS_CPU_SR  cpu_sr = 0u;
   SD_Error errorstatus=SD_OK;
 	u8 power;
   u32 count=0;
@@ -827,6 +813,7 @@ SD_Error SD_ReadMultiBlocks(u8 *buf,long long addr,u16 blksize,u32 nblks)
 //返回值:错误状态
 SD_Error SD_WriteBlock(u8 *buf,long long addr,  u16 blksize)
 {
+	OS_CPU_SR  cpu_sr = 0u;
 	SD_Error errorstatus = SD_OK;
 	
 	u8  power=0,cardstate=0;
@@ -1016,6 +1003,7 @@ SD_Error SD_WriteBlock(u8 *buf,long long addr,  u16 blksize)
 //返回值:错误状态												   
 SD_Error SD_WriteMultiBlocks(u8 *buf,long long addr,u16 blksize,u32 nblks)
 {
+	OS_CPU_SR  cpu_sr = 0u;
 	SD_Error errorstatus = SD_OK;
 	u8  power = 0, cardstate = 0;
 	u32 timeout=0,bytestransferred=0;

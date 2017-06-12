@@ -12,24 +12,17 @@
 	};
 	
 	#define false FALSE	
-	#define true TRUE
-	#define NULL 0
-//	
-////	#define ENABLE_WATCHDOG
-////	#define SYS_PARA_INIT
-//	#define PPP_DEBUG
-//	#define PRO_DEBUG
-//	#define GPS_DEBUG
-//	#define GPRS_DEBUG
-//	#define CAN_ERROR_ALARM
-	
-	
+	#define true 	TRUE
+	#define NULL 	0
 
 	#define LEN_12 12
 	#define LEN_16 16
 	#define LEN_20 20
 	#define LEN_32 32
 	#define LEN_64 64
+	
+	#define VALID_VAL_2A					0x2A
+	#define INVALID_VAL_FF				0xFF
 
 #include <stdio.h>
 #include <string.h>
@@ -46,46 +39,54 @@
 #include "sys.h"
 #include "delay.h"
 	
-	#include "tiza_selfdef.h"
-	#include "tiza_driver.h"
-	#include "tiza_debug.h"
-	#include "app_debug.h"
-	#include "tiza_RS232.h"
-	#include "tiza_RS485.h"
-	#include "tiza_sys.h"
-	#include "tiza_rtc.h"
-	#include "tiza_sd.h"
-	#include "tiza_l218.h"
+//	#include "tiza_selfdef.h"
+//	#include "tiza_l218.h"
 //	#include "tiza_business.h"
 //	#include "tiza_spi_flash.h"	
-//	#include "tiza_protocol.h"
-//	#include "tiza_can.h"
+//	
 //	#include "tiza_syspara.h"
 //	#include "tiza_systask.h"
-//	#include "tiza_flash.h"
 //	#include "tiza_ftp.h"
 //	
 //	
 //	
-//	#include "test.h"
 
+	///TIZA
+	#include "tiza_driver.h"
+	#include "tiza_adc.h"
+	#include "tiza_spi.h"
+	#include "tiza_can.h"
+	#include "tiza_intflash.h"
+	#include "tiza_RS232.h"
+	#include "tiza_RS485.h"
+	#include "tiza_sd.h"
+	#include "tiza_rtc.h"
+	#include "tiza_l218dri.h"
+	#include "tiza_l218opt.h"
+	
+	#include "tiza_selfdef.h"
+	#include "tiza_debug.h"
 
+	///SYS
 
-	#define false FALSE	
-	#define true TRUE
-	#define NULL 0
+	#include "app_spiflash.h"	
+	#include "app_can.h"
+	#include "app_intflash.h"	
+	#include "app_l218.h"
+	#include "app_protocol.h"
+	#include "app_systask.h"
+	#include "app_test.h"
 	
 /************************************************************************
 *                  DEFINE DATA STRUCTURE
 *************************************************************************/
-typedef union{
-	INT16U	word;
-	struct{
-		INT8U  low;
-		INT8U  high;
-	} bytes;
-}WORD_UNION;
-
+	typedef union{
+		INT16U	word;
+		struct{
+			INT8U  low;
+			INT8U  high;
+		} bytes;
+	}WORD_UNION;
 	
 	#define RES_FALSE		0
 	#define RES_TRUE		1
@@ -106,11 +107,9 @@ typedef union{
 	
 	
 	
-	#define QLJ_DEBUG 1
+	#define QLJ_DEBUG        0//    1//     
 	
-	// Define this to create lib
-	#define CREATE_LIB	
-	
-	
+	//对外申明信号量
+	extern OS_EVENT *Dprint_Semp;    //定义调试打印信号量
 #endif
 

@@ -306,7 +306,12 @@
 /*!< Uncomment the following line if you need to relocate your vector Table in
      Internal SRAM. */
 /* #define VECT_TAB_SRAM */
+
+#if QLJ_DEBUG == 1
+#define VECT_TAB_OFFSET  0//x20000 
+#else
 #define VECT_TAB_OFFSET  0x20000 
+#endif
 /*!< Vector Table base offset field. This value must be a multiple of 0x200. */
 /******************************************************************************/
 

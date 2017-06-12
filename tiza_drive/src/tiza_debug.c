@@ -1,25 +1,29 @@
 /*
    Debug driver for TZ2000
    UART1
+	 
+PA9  	TX
+PA10  RX
+
 */
 #define DEBUG_GLOBAL
 
 #include "tiza_include.h"
 
-#define Debug_Mode_ITorDMA	0	//-0 中断,1 DMA
+#define Debug_Mode_ITorDMA	1	//-0 中断,1 DMA
 
 #define DEBUG_RX_MAX    256
 #define DEBUG_TX_MAX    1024
 
-static  INT8U   DebugRx[DEBUG_RX_MAX];
-static  INT8U   DebugTx[DEBUG_TX_MAX];
+INT8U   DebugRx[DEBUG_RX_MAX];
+INT8U   DebugTx[DEBUG_TX_MAX];
 
 static  FIFO    DebugTxFifo;
 static  FIFO    DebugRxFifo;
 
 #define SEND_BUF_SIZE 8200	//发送数据长度,最好等于sizeof(TEXT_TO_SEND)+2的整数倍.
 
-static  INT8U SendBuff[SEND_BUF_SIZE];	//发送数据缓冲区
+INT8U SendBuff[SEND_BUF_SIZE];	//发送数据缓冲区
 
 ////////////////////////////////////////////////////////////////////////////////
 /*****************************************************************
@@ -203,6 +207,7 @@ void sprint_byte(INT8U ch)
 */
 void DPrint(const char *fmt, ...)
 {
+	uint8 err;
   char *s;
   INT8U *ptr;
   INT32U d,i,sht;
@@ -210,6 +215,9 @@ void DPrint(const char *fmt, ...)
   INT8U buf[16];
   va_list ap;
 
+	
+	OSSemPend(Dprint_Semp,0,&err);  //挂起信号量
+	
   va_start(ap, fmt);
   sht = 0;
   while (*fmt)
@@ -305,6 +313,8 @@ void DPrint(const char *fmt, ...)
     fmt++;
   }
   va_end(ap);
+	
+	OSSemPost(Dprint_Semp);   				//发送信号量
 }
 
 
@@ -429,7 +439,7 @@ uint8 Debug_init(uint32 bound)
 #endif	
 	
 	USART_ITConfig(USART1, USART_IT_RXNE, DISABLE);//关闭相关中断
-//	USART_DeInit(USART1);
+	USART_DeInit(USART1);
 	
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA,ENABLE); //使能GPIOA时钟
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1,ENABLE);//使能USART1时钟
@@ -458,16 +468,6 @@ uint8 Debug_init(uint32 bound)
 	USART_Cmd(USART1, ENABLE);  //使能串口1 
 	
 	//-USART_ClearFlag(USART1, USART_FLAG_TC);
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC,ENABLE); //使能GPIOC的时钟
-	
-	GPIO_InitStructure.GPIO_Pin=GPIO_Pin_2;	// 232_pwr
-	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_OUT;//输出
-	GPIO_InitStructure.GPIO_OType=GPIO_OType_PP;  //推挽输出
-	GPIO_InitStructure.GPIO_PuPd=GPIO_PuPd_NOPULL; 
-	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_100MHz; //高速GPIO
-	GPIO_Init(GPIOC,&GPIO_InitStructure);
-	
-	GPIO_SetBits(GPIOC, GPIO_Pin_2); //232 pwr
 
 #if Debug_Mode_ITorDMA == 0
 	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);//开启相关中断
@@ -514,6 +514,15 @@ uint8 DebugSendData(uint8 Data)
 	return 0;
 }
 
+uint8 DebugSendDatas(uint8 Data[], uint16 len)
+{
+	uint16 i;
+	for(i = 0; i < len; i++){
+		print_byte(Data[i]);
+	}
+	return 0;
+}
+
 void DebugRecData(INT8U* Dat,INT16U Len)
 {
 #if	Debug_Mode_ITorDMA == 0
@@ -547,8 +556,7 @@ void USART1_IRQHandler(void)
 INT16U ReadDebugData(INT8U *data,INT16U LEN)
 {
 	int res,i = 0;
-#if 0	
-	//-普通提取内容
+	
 	if(FIFOUsed(&DebugRxFifo))
 	{
 		while(LEN--)
@@ -557,37 +565,11 @@ INT16U ReadDebugData(INT8U *data,INT16U LEN)
 			if(res != 0xff)
 				data[i++] = res;
 			else
-				break;	
+				return i;	
 		}
 	}
-	return i;
-#else
-	static int pt = 0;
-	if(FIFOUsed(&DebugRxFifo))
-	{
-		while(LEN--)
-		{
-			res = ReadFIFO(&DebugRxFifo);
-			if(res != 0xff)
-			{
-				if((res == 0x0d) || (res == 0x0a))
-				{
-					if(pt != 0)
-					{
-						i = pt;
-						pt = 0;
-						break;
-					}
-				}
-				else
-					data[pt++] = res;
-			}
-			else
-				break;
-		}
-	}
-	return i;
-#endif
+	
+	return i;	
 }
 
 //-0 非阻塞发送,1 阻塞发送

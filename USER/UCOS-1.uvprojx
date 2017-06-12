@@ -14,8 +14,6 @@
         <TargetCommonOption>
           <Device>STM32F407ZG</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32F4xx_DFP.1.0.8</PackID>
-          <PackURL>http://www.keil.com/pack</PackURL>
           <Cpu>IROM(0x08000000,0x100000) IRAM(0x20000000,0x20000) IRAM2(0x10000000,0x10000) CPUTYPE("Cortex-M4") FPU2 CLOCK(168000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
@@ -78,9 +76,9 @@
             <nStopB2X>0</nStopB2X>
           </BeforeMake>
           <AfterMake>
-            <RunUserProg1>0</RunUserProg1>
+            <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name></UserProg1Name>
+            <UserProg1Name>fromelf --bin --output ..\OBJ\UCOS-1.bin ..\OBJ\UCOS-1.axf</UserProg1Name>
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
@@ -145,6 +143,7 @@
             <RestoreToolbox>1</RestoreToolbox>
             <RestoreTracepoints>1</RestoreTracepoints>
             <RestoreSysVw>1</RestoreSysVw>
+            <UsePdscDebugDescription>1</UsePdscDebugDescription>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
           <TargetSelection>6</TargetSelection>
@@ -356,7 +355,7 @@
             <PlainCh>0</PlainCh>
             <Ropi>0</Ropi>
             <Rwpi>0</Rwpi>
-            <wLevel>0</wLevel>
+            <wLevel>1</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
             <uC99>0</uC99>
@@ -365,7 +364,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\CORE;..\SYSTEM\delay;..\SYSTEM\sys;..\USER;..\FWLIB\inc;..\UCOSII\CONFIG;..\UCOSII\CORE;..\UCOSII\PORT;..\tiza_drive\inc;..\sys_code\inc;..\tiza_drive\inc\fatfs;..\TDLIB\inc</IncludePath>
+              <IncludePath>..\CORE;..\SYSTEM\delay;..\SYSTEM\sys;..\USER;..\FWLIB\inc;..\UCOSII\CONFIG;..\UCOSII\CORE;..\UCOSII\PORT;..\tiza_drive\inc;..\sys_code\inc;..\tiza_drive\inc\fatfs</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -479,9 +478,29 @@
               <FilePath>..\FWLIB\src\stm32f4xx_usart.c</FilePath>
             </File>
             <File>
+              <FileName>stm32f4xx_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FWLIB\src\stm32f4xx_adc.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32f4xx_dma.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\FWLIB\src\stm32f4xx_dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FWLIB\src\stm32f4xx_spi.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_can.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FWLIB\src\stm32f4xx_can.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FWLIB\src\stm32f4xx_flash.c</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_sdio.c</FileName>
@@ -489,19 +508,9 @@
               <FilePath>..\FWLIB\src\stm32f4xx_sdio.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f4xx_iwdg.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\FWLIB\src\stm32f4xx_iwdg.c</FilePath>
-            </File>
-            <File>
               <FileName>stm32f4xx_rtc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\FWLIB\src\stm32f4xx_rtc.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_exti.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\FWLIB\src\stm32f4xx_exti.c</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_pwr.c</FileName>
@@ -509,14 +518,14 @@
               <FilePath>..\FWLIB\src\stm32f4xx_pwr.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f4xx_adc.c</FileName>
+              <FileName>stm32f4xx_iwdg.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\FWLIB\src\stm32f4xx_adc.c</FilePath>
+              <FilePath>..\FWLIB\src\stm32f4xx_iwdg.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f4xx_flash.c</FileName>
+              <FileName>stm32f4xx_exti.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\FWLIB\src\stm32f4xx_flash.c</FilePath>
+              <FilePath>..\FWLIB\src\stm32f4xx_exti.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -629,6 +638,16 @@
               <FilePath>..\tiza_drive\src\tiza_driver.c</FilePath>
             </File>
             <File>
+              <FileName>tiza_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\tiza_adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\tiza_spi.c</FilePath>
+            </File>
+            <File>
               <FileName>tiza_debug.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\tiza_drive\src\tiza_debug.c</FilePath>
@@ -636,7 +655,17 @@
             <File>
               <FileName>tiza_selfdef.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\sys_code\src\tiza_selfdef.c</FilePath>
+              <FilePath>..\tiza_drive\src\tiza_selfdef.c</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_can.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\tiza_can.c</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_intflash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\tiza_intflash.c</FilePath>
             </File>
             <File>
               <FileName>tiza_RS232.c</FileName>
@@ -669,11 +698,6 @@
               <FilePath>..\tiza_drive\src\fatfs\ff.c</FilePath>
             </File>
             <File>
-              <FileName>malloc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\tiza_drive\src\malloc.c</FilePath>
-            </File>
-            <File>
               <FileName>diskio.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\tiza_drive\src\fatfs\diskio.c</FilePath>
@@ -684,29 +708,24 @@
               <FilePath>..\tiza_drive\src\fatfs\ccsbcs.c</FilePath>
             </File>
             <File>
-              <FileName>tiza_sys.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\tiza_drive\src\tiza_sys.c</FilePath>
-            </File>
-            <File>
-              <FileName>tiza_wd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\tiza_drive\src\tiza_wd.c</FilePath>
-            </File>
-            <File>
               <FileName>tiza_rtc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\tiza_drive\src\tiza_rtc.c</FilePath>
             </File>
             <File>
-              <FileName>tiza_power.c</FileName>
+              <FileName>malloc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\tiza_drive\src\tiza_power.c</FilePath>
+              <FilePath>..\tiza_drive\src\malloc.c</FilePath>
             </File>
             <File>
-              <FileName>tiza_business.c</FileName>
+              <FileName>tiza_l218dri.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\tiza_drive\src\tiza_business.c</FilePath>
+              <FilePath>..\tiza_drive\src\tiza_l218dri.c</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_l218opt.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\tiza_l218opt.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -714,9 +733,39 @@
           <GroupName>sys_scr</GroupName>
           <Files>
             <File>
-              <FileName>app_debug.c</FileName>
+              <FileName>app_spiflash.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\sys_code\src\app_debug.c</FilePath>
+              <FilePath>..\sys_code\src\app_spiflash.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_can.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sys_code\src\app_can.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_intflash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sys_code\src\app_intflash.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_test..c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sys_code\src\app_test..c</FilePath>
+            </File>
+            <File>
+              <FileName>app_l218.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sys_code\src\app_l218.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_protocol.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sys_code\src\app_protocol.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_systask.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sys_code\src\app_systask.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -728,23 +777,140 @@
               <FileType>5</FileType>
               <FilePath>..\tiza_drive\inc\tiza_driver.h</FilePath>
             </File>
+            <File>
+              <FileName>tiza_adc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\tiza_adc.h</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_spi.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\tiza_spi.h</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_debug.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\tiza_debug.h</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_selfdef.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\tiza_selfdef.h</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_can.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\tiza_can.h</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_intflash.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\tiza_intflash.h</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_RS232.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\tiza_RS232.h</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_RS485.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\tiza_RS485.h</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_sd.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\tiza_sd.h</FilePath>
+            </File>
+            <File>
+              <FileName>sdio_sdcard.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\sdio_sdcard.h</FilePath>
+            </File>
+            <File>
+              <FileName>exfuns.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\fatfs\exfuns.h</FilePath>
+            </File>
+            <File>
+              <FileName>ff.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\fatfs\ff.h</FilePath>
+            </File>
+            <File>
+              <FileName>ffconf.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\fatfs\ffconf.h</FilePath>
+            </File>
+            <File>
+              <FileName>malloc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\malloc.h</FilePath>
+            </File>
+            <File>
+              <FileName>diskio.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\fatfs\diskio.h</FilePath>
+            </File>
+            <File>
+              <FileName>integer.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\fatfs\integer.h</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_rtc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\tiza_rtc.h</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_l218dri.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\tiza_l218dri.h</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_l218opt.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\tiza_drive\inc\tiza_l218opt.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>sys_inc</GroupName>
-        </Group>
-        <Group>
-          <GroupName>TDLIB</GroupName>
           <Files>
             <File>
-              <FileName>mcu_delay.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\TDLIB\src\mcu_delay.c</FilePath>
+              <FileName>app_spiflash.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\sys_code\inc\app_spiflash.h</FilePath>
             </File>
             <File>
-              <FileName>mcu_malloc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\TDLIB\src\mcu_malloc.c</FilePath>
+              <FileName>app_can.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\sys_code\inc\app_can.h</FilePath>
+            </File>
+            <File>
+              <FileName>app_intflash.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\sys_code\inc\app_intflash.h</FilePath>
+            </File>
+            <File>
+              <FileName>app_test.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\sys_code\inc\app_test.h</FilePath>
+            </File>
+            <File>
+              <FileName>app_l218.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\sys_code\inc\app_l218.h</FilePath>
+            </File>
+            <File>
+              <FileName>app_protocol.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\sys_code\inc\app_protocol.h</FilePath>
+            </File>
+            <File>
+              <FileName>app_systask.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\sys_code\inc\app_systask.h</FilePath>
             </File>
           </Files>
         </Group>

@@ -1,13 +1,13 @@
 
-#ifndef __PROTOCOL_H
-#define __PROTOCOL_H
+#ifndef __APP_PROTOCOL_H
+#define __APP_PROTOCOL_H
 
 #include "stdint.h"
 
-	#ifdef PROTOCOL_GLOBAL
-		#define PROTOCOL_EXTERN
+	#ifdef APP_PROTOCOL_GLOBAL
+		#define APP_PROTOCOL_EXTERN
 	#else
-		#define PROTOCOL_EXTERN extern
+		#define APP_PROTOCOL_EXTERN extern
 	#endif
 /*
 驱动电机个数 1
@@ -116,7 +116,7 @@
 	}PRO_VEHICLE_UNION;
 	///驱动电机数据
 	#define PRO_MOTOR_NUMBER					1				//驱动电机数据——驱动电机个数	
-	PROTOCOL_EXTERN uint8  g_motor_number;										//驱动电机个数	1~253
+	APP_PROTOCOL_EXTERN uint8  g_motor_number;										//驱动电机个数	1~253
 	typedef union{//驱动电机总成信息列表
 		uint8 arry[12];
 		
@@ -134,7 +134,7 @@
 	
 	///燃料电池数据
 	#define PRO_FTPROBE_NUMBER					24				//燃料电池数据——温度探针个数	
-	PROTOCOL_EXTERN uint8 g_TProbe_val[PRO_FTPROBE_NUMBER];		//探针温度值	0~240(-40~+200℃)
+	APP_PROTOCOL_EXTERN uint8 g_TProbe_val[PRO_FTPROBE_NUMBER];		//探针温度值	0~240(-40~+200℃)
 	typedef union{
 		uint8 arry[18];
 //		uint8 arry[18+PRO_FTPROBE_NUMBER];
@@ -202,10 +202,10 @@
 	#define PRO_AMOTOR_MAXNUMBER					4					//报警数据——驱动电机故障个数	
 //	#define PRO_AENFINE_MAXNUMBER					0					//报警数据——发动机故障个数	
 	#define PRO_AOTHERS_MAXNUMBER					4					//报警数据——其他故障个数	
-	PROTOCOL_EXTERN uint32 g_storage_alr[PRO_ASTORAGE_MAXNUMBER];	//可充电储能装置故障码	自定义
-	PROTOCOL_EXTERN uint32 g_motro_alr[PRO_AMOTOR_MAXNUMBER];			//驱动电机故障码				自定义
-//	PROTOCOL_EXTERN uint32 g_engine_alr[PRO_AENFINE_MAXNUMBER];		//发动机故障码					自定义
-	PROTOCOL_EXTERN uint32 g_others_alr[PRO_AOTHERS_MAXNUMBER];		//其他故障码						自定义
+	APP_PROTOCOL_EXTERN uint32 g_storage_alr[PRO_ASTORAGE_MAXNUMBER];	//可充电储能装置故障码	自定义
+	APP_PROTOCOL_EXTERN uint32 g_motro_alr[PRO_AMOTOR_MAXNUMBER];			//驱动电机故障码				自定义
+//	APP_PROTOCOL_EXTERN uint32 g_engine_alr[PRO_AENFINE_MAXNUMBER];		//发动机故障码					自定义
+	APP_PROTOCOL_EXTERN uint32 g_others_alr[PRO_AOTHERS_MAXNUMBER];		//其他故障码						自定义
 	typedef union{
 		uint8 arry[9];
 		
@@ -222,7 +222,7 @@
 	///可充电电池电压数据
 	#define PRO_BATTSYS_NUMBER						1						//可充电储能装置电压数据格式——可充电储能子系统个数	
 	#define PRO_SIGBATT_MAXNUMBER					96					//本帧单体电池总数
-	PROTOCOL_EXTERN uint16 g_sigbatt_val[PRO_BATTSYS_NUMBER][PRO_SIGBATT_MAXNUMBER];		//单体电池电压		0~60000(0~60.000V)	FFFE异常 FFFF无效
+	APP_PROTOCOL_EXTERN uint16 g_sigbatt_val[PRO_BATTSYS_NUMBER][PRO_SIGBATT_MAXNUMBER];		//单体电池电压		0~60000(0~60.000V)	FFFE异常 FFFF无效
 	typedef union{//可充电储能子系统电压信息列表
 		uint8 arry[10];
 		
@@ -239,7 +239,7 @@
 	///可充电电池温度数据
 	/*可充电储能子系统个数	同电压数据上所示*/
 	#define PRO_BTPROBE_MAXNUMBER					24				//可充电温度探针个数
-	PROTOCOL_EXTERN uint8 g_btprobe_val[PRO_BATTSYS_NUMBER][PRO_BTPROBE_MAXNUMBER];		//各探针温度值		0~250(-40~+210℃)		FE异常 FF无效
+	APP_PROTOCOL_EXTERN uint8 g_btprobe_val[PRO_BATTSYS_NUMBER][PRO_BTPROBE_MAXNUMBER];		//各探针温度值		0~250(-40~+210℃)		FE异常 FF无效
 	typedef union{//可充电储能子系统温度信息列表
 		uint8 arry[3];
 		
@@ -251,8 +251,8 @@
 
 	///自定义数据
 	#define PRO_SEFDAT_LEN	2						//1~65531		自定义数据长度
-	//PROTOCOL_EXTERN uint16 g_sefdata_len;								//1~65531		自定义数据长度
-	//PROTOCOL_EXTERN uint8  g_sefdata[PRO_SEFDAT_LEN];		//自定义
+	//APP_PROTOCOL_EXTERN uint16 g_sefdata_len;								//1~65531		自定义数据长度
+	//APP_PROTOCOL_EXTERN uint8  g_sefdata[PRO_SEFDAT_LEN];		//自定义
 	
 	///车辆登出数据格式
 	typedef union{
@@ -274,19 +274,18 @@
 	#define PRO_DATA_INDEX					24	//数据开始下标
 	#define PRO_TIME_INDEX1					24	//时间开始下标1
 	
-	PROTOCOL_EXTERN uint8 g_VIN[17];		//车辆唯一VIN
-	PROTOCOL_EXTERN uint8 g_ICCID[20];	//SIM唯一ICCID
-	PROTOCOL_EXTERN PRO_TIME_UNION 				g_protime_union;
-	PROTOCOL_EXTERN PRO_LOGIN_FORM_UNION	g_prologin_union;
-	PROTOCOL_EXTERN PRO_VEHICLE_UNION			g_provehice_union;
-	PROTOCOL_EXTERN PRO_MOTOR_UNION				g_promotor_union[PRO_MOTOR_NUMBER];
-	PROTOCOL_EXTERN PRO_FUELCELL_UNION		g_profullcell_union;
-	PROTOCOL_EXTERN PRO_ENGINE_UNION			g_proengine_union;
-	PROTOCOL_EXTERN PRO_POSTION_UNION			g_propostion_union;
-	PROTOCOL_EXTERN PRO_EXTREME_UNION			g_proextreme_union;
-	PROTOCOL_EXTERN PRO_ALARM_UNION				g_proalarm_union;
-	PROTOCOL_EXTERN PRO_VBATTSYS_UNION		g_provbattsys_union;
-	PROTOCOL_EXTERN PRO_TBATTSYS_UNION		g_protbattsys_union;
+	APP_PROTOCOL_EXTERN uint8 g_VIN[17];		//车辆唯一VIN
+	APP_PROTOCOL_EXTERN PRO_TIME_UNION 				g_protime_union;
+	APP_PROTOCOL_EXTERN PRO_LOGIN_FORM_UNION	g_prologin_union;
+	APP_PROTOCOL_EXTERN PRO_VEHICLE_UNION			g_provehice_union;
+	APP_PROTOCOL_EXTERN PRO_MOTOR_UNION				g_promotor_union[PRO_MOTOR_NUMBER];
+	APP_PROTOCOL_EXTERN PRO_FUELCELL_UNION		g_profullcell_union;
+	APP_PROTOCOL_EXTERN PRO_ENGINE_UNION			g_proengine_union;
+	APP_PROTOCOL_EXTERN PRO_POSTION_UNION			g_propostion_union;
+	APP_PROTOCOL_EXTERN PRO_EXTREME_UNION			g_proextreme_union;
+	APP_PROTOCOL_EXTERN PRO_ALARM_UNION				g_proalarm_union;
+	APP_PROTOCOL_EXTERN PRO_VBATTSYS_UNION		g_provbattsys_union;
+	APP_PROTOCOL_EXTERN PRO_TBATTSYS_UNION		g_protbattsys_union;
 	
 	
 	
@@ -372,8 +371,8 @@
 	
 	
 	
-	PROTOCOL_EXTERN PRO_PARA_UNION 			g_propara_union;
-	PROTOCOL_EXTERN PRO_UPGREAD_STRUCT	g_proupgread_struct;
+	APP_PROTOCOL_EXTERN PRO_PARA_UNION 			g_propara_union;
+	APP_PROTOCOL_EXTERN PRO_UPGREAD_STRUCT	g_proupgread_struct;
 	
 	
 	
@@ -408,43 +407,27 @@
 		TX_STRUCT tx_struct;
 	}PRO_STRUCT;
 	
-	
-	#define LSNAL_PAGE_SIZE 					0x200				///暂定512，每段放8个,<<9
-	#define SYS_LSNAL_SPIMAXINDEX			12288				///96*16*8
-	#define SYS_LSNAL_SPISTART_ADDR		SPIFLASH_LSNAL_START_ADD
-	#define SYS_LSNAL_SPIEND_ADDR			SPIFLASH_LSNAL_END_ADD
-	#define SYS_LSNAL_SPIINDEX_ADDR		SPIFLASH_LSNAL_ADD	///最后1M放其他
-	#define SYS_LSNAL_SPIINDEXSECTOR	SPIFLASH_LSNAL_SEC	///页码下标保存起始段号
-	
-	#define TMP_BUFF_MAXLEN						LSNAL_PAGE_SIZE	
-	typedef struct
-	{
-		uint8  data[LSNAL_PAGE_SIZE];		//一包盲区数据大小
-		uint32 headindex;							  //包号(每块16段，每段4Kbety)
-		uint32 tailindex;								//包号(每块16段，每段4Kbety)
-	}SYS_LSNAL_STRUCT;
+
+	#define TMP_BUFF_MAXLEN						APP_EF_EVERYLSNAL_SIZE1	
+
 		
 	
-	PROTOCOL_EXTERN SYS_LSNAL_STRUCT g_syslsnal_struct;
-	PROTOCOL_EXTERN PRO_STRUCT			 g_pro_struct;
+	APP_PROTOCOL_EXTERN PRO_STRUCT			 g_pro_struct;
 		
 
-	PROTOCOL_EXTERN uint16 Pro_RealTime_Data(uint8 data[]);
-	PROTOCOL_EXTERN void ProPara_Init(void);	
-	PROTOCOL_EXTERN void SetPara2FactoryReset(void);
-	PROTOCOL_EXTERN void ProWrite_SysPara(void);
-	PROTOCOL_EXTERN void ProRead_SysPara(void);
-	PROTOCOL_EXTERN void ProLsnalSysExit(void);
-	PROTOCOL_EXTERN void ProLsnalHeadTailSave(void);
-	PROTOCOL_EXTERN void ProUpRealFormation(uint8 mode);
-	PROTOCOL_EXTERN void ProUpLogin(void);
-	PROTOCOL_EXTERN void ProUpLogout(void);
-	PROTOCOL_EXTERN void ProUpHeartBeat(void);
-	PROTOCOL_EXTERN void ProUpCheckTime(void);
-	PROTOCOL_EXTERN void ProConstructFrameHead(uint8 data[],uint16 tx_len,uint8 cmd);
-	PROTOCOL_EXTERN void ProConstructFrameTail(uint8 data[],uint16 tx_len);
-	PROTOCOL_EXTERN void ProPacket(uint8 tx_data[],uint16 tx_len,uint8 tx_cmd,uint8 ack_flag, uint8 mode);
-	PROTOCOL_EXTERN void ProPeriodTx(uint16 past_sec);
-	PROTOCOL_EXTERN void ProProcess(uint8 data[], uint16 len, uint16 colon);
+	APP_PROTOCOL_EXTERN uint16 Pro_RealTime_Data(uint8 data[]);
+	APP_PROTOCOL_EXTERN void ProPara_Init(void);	
+	APP_PROTOCOL_EXTERN void SetPara2FactoryReset(void);
+	APP_PROTOCOL_EXTERN void ProLsnalSysExit(void);
+	APP_PROTOCOL_EXTERN void ProUpRealFormation(uint8 mode);
+	APP_PROTOCOL_EXTERN void ProUpLogin(void);
+	APP_PROTOCOL_EXTERN void ProUpLogout(void);
+	APP_PROTOCOL_EXTERN void ProUpHeartBeat(void);
+	APP_PROTOCOL_EXTERN void ProUpCheckTime(void);
+	APP_PROTOCOL_EXTERN void ProConstructFrameHead(uint8 data[],uint16 tx_len,uint8 cmd);
+	APP_PROTOCOL_EXTERN void ProConstructFrameTail(uint8 data[],uint16 tx_len);
+	APP_PROTOCOL_EXTERN void ProPacket(uint8 tx_data[],uint16 tx_len,uint8 tx_cmd,uint8 ack_flag, uint8 mode);
+	APP_PROTOCOL_EXTERN void ProPeriodTx(uint16 past_sec);
+	APP_PROTOCOL_EXTERN void ProProcess(uint8 data[], uint16 len, uint16 colon);
 	
 #endif

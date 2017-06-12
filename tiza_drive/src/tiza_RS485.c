@@ -537,7 +537,7 @@ void RS485RecData(INT8U* Dat,INT16U Len)
 #endif	
 }
 
-//串口1中断服务程序
+//串口2中断服务程序
 void USART2_IRQHandler(void)
 {
 	uint8 Res;

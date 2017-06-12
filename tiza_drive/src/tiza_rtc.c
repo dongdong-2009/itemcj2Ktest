@@ -1,27 +1,10 @@
-#define RTC_GLOBAL
+#define TIZA_RTC_GLOBAL
+#define TIZA_RTC_DEBUG
 
-//-#include "tiza_rtc.h"
+//#define RTC_USE_LSI   //使用片内低频时钟
+
 #include "tiza_include.h"
 
-
-//#define RTC_DEBUG
-//#define RTC_USE_LSI
-
-static void delay_ms(uint16 time)
-{ 
-  uint32 tmp;// = time * 21;
-  while(time--)
-  {
-    tmp = 21000;
-    while(tmp--)
-    {
-      __NOP();
-      __NOP();
-      __NOP();
-      __NOP();
-    }
-  }
-}
 
 
 //RTC时间设置
@@ -29,7 +12,7 @@ static void delay_ms(uint16 time)
 //ampm:@RTC_AM_PM_Definitions  :RTC_H12_AM/RTC_H12_PM
 //返回值:SUCEE(1),成功
 //       ERROR(0),进入初始化模式失败 
-ErrorStatus RTC_Set_Time(u8 hour,u8 min,u8 sec,u8 ampm)
+static ErrorStatus RTC_Set_Time(u8 hour,u8 min,u8 sec,u8 ampm)
 {
 	RTC_TimeTypeDef RTC_TimeTypeInitStructure;
 	
@@ -46,7 +29,7 @@ ErrorStatus RTC_Set_Time(u8 hour,u8 min,u8 sec,u8 ampm)
 //week:星期(1~7,0,非法!)
 //返回值:SUCEE(1),成功
 //       ERROR(0),进入初始化模式失败 
-ErrorStatus RTC_Set_Date(u8 year,u8 month,u8 date,u8 week)
+static ErrorStatus RTC_Set_Date(u8 year,u8 month,u8 date,u8 week)
 {
 	
 	RTC_DateTypeDef RTC_DateTypeInitStructure;
@@ -58,6 +41,8 @@ ErrorStatus RTC_Set_Date(u8 year,u8 month,u8 date,u8 week)
 	return RTC_SetDate(RTC_Format_BIN, &RTC_DateTypeInitStructure);
 }
 
+
+//------------------------------------------------------------------------------//
 //RTC初始化
 //返回值:0,初始化成功;
 //       1,进入初始化模式失败;
@@ -120,13 +105,13 @@ uint8 RtcGetTime(RTC_ST *time)
 	RTC_GetTime(RTC_Format_BIN, &RTC_TimeStruct);
 	RTC_GetDate(RTC_Format_BIN, &RTC_DateStruct);
 
-	time->year = RTC_DateStruct.RTC_Year;
-	time->month = RTC_DateStruct.RTC_Month;
-	time->day = RTC_DateStruct.RTC_Date;
+	time->year 		= RTC_DateStruct.RTC_Year;
+	time->month	 	= RTC_DateStruct.RTC_Month;
+	time->day 		= RTC_DateStruct.RTC_Date;
 
-	time->hour = RTC_TimeStruct.RTC_Hours;
-	time->minute = RTC_TimeStruct.RTC_Minutes;
-	time->second = RTC_TimeStruct.RTC_Seconds;
+	time->hour 		= RTC_TimeStruct.RTC_Hours;
+	time->minute 	= RTC_TimeStruct.RTC_Minutes;
+	time->second 	= RTC_TimeStruct.RTC_Seconds;
 	
 	return 0;
 }
@@ -139,8 +124,8 @@ uint8 RtcSetTime(RTC_ST *time)
 
 	if(RTC_Set_Time(time->hour, time->minute, time->second, RTC_H12_AM)	== ERROR)	//设置时间
 	{
-		#ifdef RTC_DEBUG
-		printf("RTC_Set_Time failed...\r\n");
+		#ifdef TIZA_RTC_DEBUG
+		DPrint("RTC_Set_Time failed...\n");
 		#endif
 		
 		return 1;
@@ -148,8 +133,8 @@ uint8 RtcSetTime(RTC_ST *time)
 
 	if(RTC_Set_Date(time->year, time->month, time->day, 1) == ERROR)		//设置日期, week
 	{
-		#ifdef RTC_DEBUG
-		printf("RTC_Set_Date failed...\r\n");
+		#ifdef TIZA_RTC_DEBUG
+		DPrint("RTC_Set_Date failed...\n");
 		#endif
 		
 		return 1;
@@ -174,31 +159,31 @@ uint8 RtcSetAlarm(uint16 Sec)
 
 	RTC_WakeUpCmd(DISABLE);//关闭WAKE UP
 
-	RTC_WakeUpClockConfig(RTC_WakeUpClock_CK_SPRE_16bits);//唤醒时钟选择
+	RTC_WakeUpClockConfig(RTC_WakeUpClock_CK_SPRE_16bits);	//唤醒时钟选择
 
 	if(Sec != 0)	Sec--;
 	
-	RTC_SetWakeUpCounter(Sec);//设置WAKE UP自动重装载寄存器
+	RTC_SetWakeUpCounter(Sec);															//设置WAKE UP自动重装载寄存器
 
-	RTC_ClearFlag(RTC_FLAG_WUTF);	//清除中断标志
+	RTC_ClearFlag(RTC_FLAG_WUTF);														//清除中断标志
 	
-	RTC_ClearITPendingBit(RTC_IT_WUT); //清除RTC WAKE UP的标志
-	EXTI_ClearITPendingBit(EXTI_Line22);//清除LINE22上的中断标志位 
+	RTC_ClearITPendingBit(RTC_IT_WUT); 											//清除RTC WAKE UP的标志
+	EXTI_ClearITPendingBit(EXTI_Line22);										//清除LINE22上的中断标志位 
 	
-	EXTI_InitStructure.EXTI_Line = EXTI_Line22;//LINE22
-	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;//中断事件
-	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising; //上升沿触发 
-	EXTI_InitStructure.EXTI_LineCmd = ENABLE;//使能LINE22
-	EXTI_Init(&EXTI_InitStructure);//配置
+	EXTI_InitStructure.EXTI_Line = EXTI_Line22;							//LINE22
+	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;			//中断事件
+	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising; 	//上升沿触发 
+	EXTI_InitStructure.EXTI_LineCmd = ENABLE;								//使能LINE22
+	EXTI_Init(&EXTI_InitStructure);													//配置
  
 	NVIC_InitStructure.NVIC_IRQChannel = RTC_WKUP_IRQn; 
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x01;//抢占优先级1
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x01;//子优先级1
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;//使能外部中断通道
-	NVIC_Init(&NVIC_InitStructure);//配置
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority 	= 0x01;	//抢占优先级1
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority 				= 0x01;	//子优先级1
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;								//使能外部中断通道
+	NVIC_Init(&NVIC_InitStructure);																//配置
 
-	RTC_ITConfig(RTC_IT_WUT,ENABLE);//开启WAKE UP 定时器中断
-	RTC_WakeUpCmd( ENABLE);//开启WAKE UP 定时器　
+	RTC_ITConfig(RTC_IT_WUT,ENABLE);												//开启WAKE UP 定时器中断
+	RTC_WakeUpCmd( ENABLE);																	//开启WAKE UP 定时器　
 
 	return 0;
 }
@@ -208,13 +193,39 @@ void RTC_WKUP_IRQHandler(void)
 {
 	SystemInit();
 
-	if(RTC_GetFlagStatus(RTC_FLAG_WUTF)==SET)//WK_UP中断?
+	if(RTC_GetFlagStatus(RTC_FLAG_WUTF)==SET)		//WK_UP中断?
 	{ 
-		RTC_ClearFlag(RTC_FLAG_WUTF);	//清除中断标志
+		RTC_ClearFlag(RTC_FLAG_WUTF);							//清除中断标志
 	}   
-	EXTI_ClearITPendingBit(EXTI_Line22);//清除中断线22的中断标志 		
+	EXTI_ClearITPendingBit(EXTI_Line22);				//清除中断线22的中断标志 		
 
-	RTC_WakeUpCmd(DISABLE);//关闭WAKE UP
+	RTC_WakeUpCmd(DISABLE);											//关闭WAKE UP
 	RTC_ITConfig(RTC_IT_WUT,DISABLE);
 }
 
+
+//=====================================================================================//
+/******************************************************
+低功耗相关函数
+
+******************************************************/
+/// cpu entry low power mode
+void CpuPowerDown(void)
+{
+	PWR_ClearFlag(PWR_FLAG_WU);									//清除Wake-up 标志
+	PWR_EnterSTOPMode(PWR_LowPowerRegulator_ON, PWR_STOPEntry_WFI);
+}
+
+/// modules power down
+void SystemPowerDown(void)
+{
+	//添加需要关电源的模块
+	ADC_Cmd(ADC1, DISABLE);
+}
+
+/// modules power on
+void SystemWakeup(void)
+{
+	//开启休眠模块的电源
+	ADC_Cmd(ADC1, ENABLE);
+}
