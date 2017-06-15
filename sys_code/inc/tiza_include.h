@@ -66,6 +66,7 @@
 	
 	#include "tiza_selfdef.h"
 	#include "tiza_debug.h"
+	#include "tiza_ftp.h"
 
 	///SYS
 

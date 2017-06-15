@@ -85,19 +85,19 @@
 		uint8  upheart_count;								///系统上传心跳计时
 	}SYSM_TIMEOUT_STRUCT;
 	
-//	#define SYSM_ON							1
-//	#define SYSM_OFF						0
-//	typedef struct{//系统程序块是否启用 开关
-//		uint8 canrx_switch;										//接收中断
-//		uint8 GPRSPacketTx_switch;						//GPRS无需应答式发送 或 打包给周期发送
-//		uint8 GPRSPeriodTx_switch;						//GPRS需要应答式发送
-//		uint8 ADC_switch;											//ADC转换中断
-//		uint8 extflash_w_switch;							//片外flash擦写
-//		uint8 flash_w_switch;									//片内flash擦写
-//	}SYSM_ON_OFF_STRUCT;
+	#define SYSM_ON							1
+	#define SYSM_OFF						0
+	typedef struct{//系统程序块是否启用 开关
+		uint8 canrx_switch;										//接收中断
+		uint8 GPRSPacketTx_switch;						//GPRS无需应答式发送 或 打包给周期发送
+		uint8 GPRSPeriodTx_switch;						//GPRS需要应答式发送
+		uint8 ADC_switch;											//ADC转换中断
+		uint8 extflash_w_switch;							//片外flash擦写
+		uint8 flash_w_switch;									//片内flash擦写
+	}SYSM_ON_OFF_STRUCT;
 	
 	APP_EXTERN_SYSTASK SYSM_TIMEOUT_STRUCT g_sysm_timeout_struct;
-//	APP_EXTERN_SYSTASK SYSM_ON_OFF_STRUCT 	g_sysm_on_off_struct;
+	APP_EXTERN_SYSTASK SYSM_ON_OFF_STRUCT 	g_sysm_on_off_struct;
 	
 	
 	APP_EXTERN_SYSTASK uint16 adc_result[2];

@@ -120,7 +120,7 @@
 
 
 
-
+#define GPRS_UART_BUF_LEN  		1500
 
 
 

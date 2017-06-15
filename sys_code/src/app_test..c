@@ -390,7 +390,9 @@ static void local_debug_cmd(void)
 			memcpy(g_proupgread_struct.file_path,"/TIZA_FTP.bin",13);
 			g_proupgread_struct.file_path[13] = 0;
 			
-//			ftp_struct.ftp_upgrade_flag 						= 1;	
+			g_sysmiscrun_struct.ProgramUpgrade_flag 						= 1;
+			ReadyBeforeUpgrade();
+			ftp_struct.ftp_upgrade_flag 						= 1;	
 			g_sysmiscrun_struct.ProgramUpgrade_flag = 1;
 		}
 		else if(SubMatch((uint8*)"CMD CLEARLSNAL", 14,data,count)){	//ÇåÃ¤Çø

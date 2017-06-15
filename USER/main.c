@@ -1,9 +1,9 @@
 #include "tiza_include.h"
 
 #define MAIN_TEST_TASK 
-#define MAIN_CANS_TASK 
+//#define MAIN_CANS_TASK 
 #define MAIN_APPL218_TASK 
-#define MAIN_PERIOD_TASK
+//#define MAIN_PERIOD_TASK
 
 
 /////////////////////////UCOSII任务设置///////////////////////////////////
@@ -76,6 +76,9 @@ int main(void)
 	delay_init(168);		  															//初始化延时函数
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);			//中断分组配置
 	System_Mode_Init();   															//初始化模块
+	
+//	while(1)
+//		Tiza_FeedWdg(OPERATE_2WDGS);
 	
 	OSInit();   
  	OSTaskCreate(start_task,(void *)0,(OS_STK *)&START_TASK_STK[START_STK_SIZE-1],START_TASK_PRIO );//创建起始任务
@@ -152,21 +155,21 @@ void led0_task(void *pdata)
 	while(1)
 	{
 	Tiza_FeedWdg(OPERATE_2WDGS);
-		DealDebugSend(1);
-		ON_GRE_LED();
+//-		DealDebugSend(1);
+//		ON_GRE_LED();
 		OSTimeDlyHMSM(0, 0, 0, 100);		
-		Tiza_FeedWdg(OPERATE_2WDGS);
-		OSTimeDlyHMSM(0, 0, 0, 100);		
-		Tiza_FeedWdg(OPERATE_2WDGS);
-		OSTimeDlyHMSM(0, 0, 0, 100);		
-		Tiza_FeedWdg(OPERATE_2WDGS);
-		OFF_GRE_LED();
-		OSTimeDlyHMSM(0, 0, 0, 100);		
-		Tiza_FeedWdg(OPERATE_2WDGS);
-		OSTimeDlyHMSM(0, 0, 0, 100);		
-		Tiza_FeedWdg(OPERATE_2WDGS);
-		OSTimeDlyHMSM(0, 0, 0, 100);		
-		Tiza_FeedWdg(OPERATE_2WDGS);
+//		Tiza_FeedWdg(OPERATE_2WDGS);
+//		OSTimeDlyHMSM(0, 0, 0, 100);		
+//		Tiza_FeedWdg(OPERATE_2WDGS);
+//		OSTimeDlyHMSM(0, 0, 0, 100);		
+//		Tiza_FeedWdg(OPERATE_2WDGS);
+//		OFF_GRE_LED();
+//		OSTimeDlyHMSM(0, 0, 0, 100);		
+//		Tiza_FeedWdg(OPERATE_2WDGS);
+//		OSTimeDlyHMSM(0, 0, 0, 100);		
+//		Tiza_FeedWdg(OPERATE_2WDGS);
+//		OSTimeDlyHMSM(0, 0, 0, 100);		
+//		Tiza_FeedWdg(OPERATE_2WDGS);
 		
 	};
 }

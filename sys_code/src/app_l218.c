@@ -9,7 +9,7 @@
 //模块参数复位 从BGprsResetPara分出
 输出：
 ******************************************************/
-static uint8 Module_Para_Rest(void)
+static void Module_Para_Rest(void)
 {
 	g_gprs_data_struct.setnetparaok_flag 		= 0;
 	SetGPRSNetPara();
@@ -27,7 +27,7 @@ static uint8 Module_Para_Rest(void)
 //应用层 复位模块
 输出：
 ******************************************************/
-uint8 App_Module_Rest(void)
+void App_Module_Rest(void)
 {
 	BusiResetModule();
 	
@@ -122,6 +122,12 @@ static void Module_Idel_Action(void)
 		g_pro_struct.updata_noacksend = 0;
 		goto RETURN_LAB;
 	}
+	
+	//更新升级
+	if(g_sysmiscrun_struct.ProgramUpgrade_flag == 1){
+		ReadyBeforeUpgrade();
+		goto RETURN_LAB;
+	}
 
 RETURN_LAB:
 	return;
@@ -187,19 +193,21 @@ void APP_L218_task(void *pdata)
 	Module_Para_Rest();
 	BGprsResetPara();
 	g_sysmiscrun_struct.tasks_initOK_flag.bit.B1 = 1;
+//	ftp_struct.ftp_upgrade_flag = 1;
+	ftp_struct.ftp_txstep = e_ftpstart;
 	while(1)
 	{		
-		OSTimeDlyHMSM(0, 0, 0, 20);
-		if(++count > 500)  count=0;	//10s
-		
-		ExecuteModuleTask();
-		
-		
-		
-		if(count%5 == 0){	//2s
-			GPRS_Reconnect2Platform();
-		}
-
+		OSTimeDlyHMSM(0, 0, 0, 400);
+//		if(++count > 500)  count=0;	//10s
+//		
+//		ExecuteModuleTask();
+//		
+//		
+//		
+//		if(count%5 == 0){	//2s
+//			GPRS_Reconnect2Platform();
+//		}
+		FtpMain();
 	}
 	
 }

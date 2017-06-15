@@ -124,8 +124,8 @@ AT_CMD_STRUCT g_at_cmd_struct[] =
 		{(uint8 *)AT_FTPPW,    		   100,	 1*SEND_1T,	EXE_NO,	AtFTPPWFun},
 		{(uint8 *)AT_FTPGETNAME,     100,	 1*SEND_1T,	EXE_NO,	AtFTPGETNAMEFun},
 		{(uint8 *)AT_FTPGETPATH,     100,	 1*SEND_1T,	EXE_NO,	AtFTPGETPATHFun},
-		{(uint8 *)AT_FTPGET1,    	  3000,	 1*SEND_1T,	EXE_NO,	AtFTPGET1Fun},
-		{(uint8 *)AT_FTPGET2,    	  3000,	 1*SEND_1T, EXE_NO,	AtFTPGET2Fun},
+		{(uint8 *)AT_FTPGET1,    	  6000,	 3*SEND_1T,	EXE_NO,	AtFTPGET1Fun},
+		{(uint8 *)AT_FTPGET2,    	  6000,	 3*SEND_1T, EXE_NO,	AtFTPGET2Fun},
 		{(uint8 *)AT_FTPQUIT,    	   100,	 1*SEND_1T,	EXE_NO,	AtFTPQUITFun},
 		{(uint8 *)AT_FTPSIZE,    	  1000,	 1*SEND_1T,	EXE_NO,	AtFTPSIZEFun},
 
@@ -720,7 +720,7 @@ void AtFTPGET1Fun(uint8 *data,uint16 len,uint8 flag)
 
 void AtFTPGET2Fun(uint8 *data,uint16 len,uint8 flag)
 {	
-	/*
+	
   uint8  i = 0,j = 0,cmp_data[20];// = {"+FTPGET: 2,"},cmp_data3[20] = {"+FTPGET:1,1"};
 	uint8  ack_flag = FALSE,rrx_data[L218_MAX_BUF_LEN];
 	uint16 flash_len = 0,mat_index = 0,rx_len = 0,source_head = 0,end_head = 0,time;
@@ -823,7 +823,7 @@ COMPARA_LAB:
 		}
 		
 	}
-	*/
+	
 	ReadOverTailIndex(len);
 }
 
@@ -840,7 +840,7 @@ void AtFTPQUITFun(uint8 *data,uint16 len,uint8 flag)
 
 void AtFTPSIZEFun(uint8 *data,uint16 len,uint8 flag)
 {
-/*	uint8 mat_index,i = 0,j = 0;
+	uint8 mat_index,i = 0,j = 0;
 	uint8 cmp_data[] = {"+FTPSIZE: 1,0,"};
 	uint32 temp_len = 0;
 		
@@ -862,11 +862,11 @@ void AtFTPSIZEFun(uint8 *data,uint16 len,uint8 flag)
 			g_at_cmd_struct[AT_FTPSIZE_INDEX].exe_flag = EXE_OK;
 		}
 	}	
-	*/
+	
 	ReadOverTailIndex(len);
 }
 ///AT指令处理函数---end
-
+uint8 rx_data[L218_MAX_BUF_LEN];
 //--------------------------------------------------------------------------------------------------------------------------------//
 /******************************************************
 //AT指令发送
@@ -874,9 +874,10 @@ void AtFTPSIZEFun(uint8 *data,uint16 len,uint8 flag)
 //                    AT指令序列      附加数据      附加数据长度     匹配数据      匹配数据长度		是否(1/0)检查0D0A 
 void L218SendAtCmd(uint8 cmd_index,uint8 app_data[],uint8 app_len,uint8 mat_data[],uint8 mat_len, uint8 flag)
 {
-	uint8 count,ack_flag = FALSE,rx_data[L218_MAX_BUF_LEN];
+	uint8 count,ack_flag = FALSE;
 	uint16 rx_len = 0,mat_index = 0,mat_0d0a = 0,time;
   uint8  i = 0,cmp_data[20];// = {"+FTPGET: 1,0"};
+	uint16 temp_pt = 0;
 	cmp_data[i++] = '+';
 	cmp_data[i++] = 'F';
 	cmp_data[i++] = 'T';
@@ -902,7 +903,8 @@ void L218SendAtCmd(uint8 cmd_index,uint8 app_data[],uint8 app_len,uint8 mat_data
 		}		
 		L218_GPRSUARTSend_Ctr(1);
 		#ifdef TIZA_L218DRI_DEBUG
-			if(count == 0){
+			//if(count == 0)
+			{
 				DebugSendDatas(g_at_cmd_struct[cmd_index].cmd_text,StrLen(g_at_cmd_struct[cmd_index].cmd_text,0));
 				if(app_len > 0){
 					DebugSendDatas(app_data,app_len);
@@ -911,23 +913,29 @@ void L218SendAtCmd(uint8 cmd_index,uint8 app_data[],uint8 app_len,uint8 mat_data
 			}
 		#endif
 		//延时等待应答
+		temp_pt = 0;
 		for(time=0;time<g_at_cmd_struct[cmd_index].max_ms_wait;time++)
 		{
 			OSTimeDlyHMSM(0, 0, 0, WAIT_10MS);
 			rx_len = L218UartIsRxDone(rx_data,L218_MAX_BUF_LEN);
 			if(rx_len > 0)
 			{
+				if(temp_pt != rx_len)
+				{
+					#ifdef TIZA_L218DRI_DEBUG
+					DebugSendDatas(rx_data + temp_pt,rx_len - temp_pt);
+					DealDebugSend(1);
+					#endif
+					temp_pt = rx_len;
+				}
 				mat_index = SubMatch(mat_data,mat_len,rx_data,rx_len);
 				mat_0d0a  = SubMatch((uint8*)"\x0d\x0a", 2,&rx_data[mat_index],rx_len-mat_index);
 				if(mat_index>0 && (mat_0d0a>0 || flag==0)){
-					#ifdef TIZA_L218DRI_DEBUG
-						DebugSendDatas(rx_data,rx_len);
-						DealDebugSend(1);
-					#endif
+
 					ack_flag = TRUE;
 					break;
 				}
-	/*			else if(cmd_index == AT_FTPGET2_INDEX){
+				else if(cmd_index == AT_FTPGET2_INDEX){
 					mat_index = SubMatch(cmp_data, 12, rx_data, rx_len);
 					mat_0d0a  = SubMatch((uint8*)"\x0d\x0a", 2,&rx_data[mat_index],rx_len-mat_index);
 					if(mat_index>0 && mat_0d0a>0){
@@ -939,16 +947,16 @@ void L218SendAtCmd(uint8 cmd_index,uint8 app_data[],uint8 app_len,uint8 mat_data
 						break;
 						}
 					}
-					else {
-						cmp_data[9] = '2';
-						if(SubMatch(cmp_data, 12, rx_data, rx_len) > 0){
-							break;
-						}
-						
-						cmp_data[9] = '1';
-					}
+//					else {
+//						cmp_data[9] = '2';
+//						if(SubMatch(cmp_data, 12, rx_data, rx_len) > 0){
+//							break;
+//						}
+//						
+//						cmp_data[9] = '1';
+//					}
 				}
-				*/
+				
 			}
 		}
 		if(ack_flag){
@@ -1374,6 +1382,8 @@ void L218Reset(void)
 			break;
 		}
 	}
+	
+	L218SendAtCmd(AT_E0_INDEX,NULL,0,(uint8 *)OK_ACK,2, 1);	
 	
 	if(i == 3){//  AT不响应重启重启
 		DPrint("AT no response,wo will restart terminal now!!\n");

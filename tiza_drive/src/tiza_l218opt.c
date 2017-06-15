@@ -1297,9 +1297,9 @@ void SearchDataFromSer(void)
 ******************************************************/
 void SearchDataFromFtp(void)
 {
-/*	uint8 res=2,run=0;
+	uint8 res=2,run=0;
 	
-	if(g_sysmiscrun_struct.ProgramUpgrade_flag == 2){
+	if(g_sysmiscrun_struct.ProgramUpgrade_flag == 1){
 		run = 1;
 		ftp_struct.ftp_txstep = e_ftpstart;
 		while(run){
@@ -1321,11 +1321,11 @@ void SearchDataFromFtp(void)
 	}	
 
 	if(ftp_struct.ftp_upgrade_success_flag == 1){//-成功获取更新代码,置标志位,让boot升级 
-		res = FlashErase(FLASH_BOOT_PARA_START_ADDR);
+		res = CpuFlashEraseSector(FLASH_BOOT_PARA_START_ADDR);
 		if(res){
 			boot_struct.program_update_flag = VALID_VAL_DWORD_AA;
 			boot_struct.sys_para_init_flag  = INVALID_VAL_DWORD_55;
-			res = FlashWrite(FLASH_BOOT_PARA_START_ADDR,(uint8*)&boot_struct.program_update_flag,12);
+			res = CpuFlashWrite(FLASH_BOOT_PARA_START_ADDR,(uint8*)&boot_struct.program_update_flag,12);
 			if(res){
 				ftp_struct.ftp_upgrade_success_flag = 0;
 				g_sysmiscrun_struct.ProgramUpgrade_flag = 0;
@@ -1347,7 +1347,7 @@ void SearchDataFromFtp(void)
 		g_sysmiscrun_struct.ProgramUpgrade_flag = 0;
 		SysReset();	
 	}
-	*/
+	
 }
 /******************************************************
 //L218模块定时调度函数

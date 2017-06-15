@@ -19,7 +19,7 @@
 		#define EXE_04_OFF 		0X04
 		#define EXE_CONTINUE 	0X05	//FTP
 				
-		#define L218_MAX_BUF_LEN 		1024
+		#define L218_MAX_BUF_LEN 		2048
 		
 		typedef struct
 		{///AT√¸¡ÓΩ·ππÃÂ

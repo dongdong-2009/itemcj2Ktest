@@ -14,6 +14,8 @@
         <TargetCommonOption>
           <Device>STM32F407ZG</Device>
           <Vendor>STMicroelectronics</Vendor>
+          <PackID>Keil.STM32F4xx_DFP.1.0.8</PackID>
+          <PackURL>http://www.keil.com/pack</PackURL>
           <Cpu>IROM(0x08000000,0x100000) IRAM(0x20000000,0x20000) IRAM2(0x10000000,0x10000) CPUTYPE("Cortex-M4") FPU2 CLOCK(168000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
@@ -143,7 +145,6 @@
             <RestoreToolbox>1</RestoreToolbox>
             <RestoreTracepoints>1</RestoreTracepoints>
             <RestoreSysVw>1</RestoreSysVw>
-            <UsePdscDebugDescription>1</UsePdscDebugDescription>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
           <TargetSelection>6</TargetSelection>
@@ -355,7 +356,7 @@
             <PlainCh>0</PlainCh>
             <Ropi>0</Ropi>
             <Rwpi>0</Rwpi>
-            <wLevel>1</wLevel>
+            <wLevel>2</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
             <uC99>0</uC99>
@@ -726,6 +727,11 @@
               <FileName>tiza_l218opt.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\tiza_drive\src\tiza_l218opt.c</FilePath>
+            </File>
+            <File>
+              <FileName>tiza_ftp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\tiza_drive\src\tiza_ftp.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -17,7 +17,7 @@ uint8 Backup_Bef_Wr_Int[BACKUP_WRITE_INT];
 ******************************************************/
 void ProWrite_IntFlash_VIN(uint8 str[], uint16 len)
 {
-	uint8 data[20];
+	uint8 data[25];
 	uint8  i=0;
 		
 	if(len == 0){

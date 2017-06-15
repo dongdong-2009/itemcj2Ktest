@@ -559,14 +559,14 @@ static void CAN2Terminal_Action(void)
 ******************************************************/	
 void ReadyBeforeUpgrade(void)
 {
-	/*uint32 ftpflshadd;
+	uint32 ftpflshadd;
 	
 ///升级	
 	if(g_sysmiscrun_struct.ProgramUpgrade_flag == 1){	
 //		LocalUartFixedLenSend((uint8*)"正在升级\r\n", 10);
 		//CAN
 		OFF_CAN_PWR();			
-		CanDeInit();
+//		CanDeInit();
 		g_sysm_on_off_struct.canrx_switch 				= SYSM_OFF;
 		//周期发送
 		g_sysm_on_off_struct.GPRSPeriodTx_switch 	= SYSM_OFF;
@@ -574,12 +574,14 @@ void ReadyBeforeUpgrade(void)
 		
 		for(ftpflshadd=FlASH_STORE_START_ADD; ftpflshadd < FLASH_STORE_END_ADD;){
 			OSTimeDlyHMSM(0, 0, 0, 20);
-			FlashErase(ftpflshadd);
-			ftpflshadd += 0x800;
+			Tiza_FeedWdg(OPERATE_2WDGS);
+			CpuFlashEraseSector(ftpflshadd);
+			ftpflshadd += 0x20000;
 		}	
+		Tiza_FeedWdg(OPERATE_2WDGS);
 		ftp_struct.ftp_upgrade_flag 						= 1;	
 		g_sysmiscrun_struct.ProgramUpgrade_flag = 2;
-	}*/
+	}
 }
 /******************************************************
 //应用程序任务
@@ -665,7 +667,7 @@ void Period_task(void *pdata)
 			CAN2Terminal_Action();											//CAN报文对终端的动作
 			AlarmDisableFunction();											//报警禁用功能	
 			
-			Terminal_PowerBat_ADC();										//外电、电池电压检查
+		//	Terminal_PowerBat_ADC();										//外电、电池电压检查
 			TerminalMainPowerStatu();										//外电断开在上电复位
 			Terminal_CheckTCPStatus(1); 								//TCP链路状态检查
 			

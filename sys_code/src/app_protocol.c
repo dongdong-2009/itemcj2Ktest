@@ -1274,6 +1274,8 @@ void ProPeriodTx(uint16 past_sec)
 		uint16 j;
 	#endif
 	
+	if(g_sysm_on_off_struct.GPRSPeriodTx_switch 	== SYSM_OFF)   return;
+	
 	for(i=0;i<PRO_MAX_TX_BUF_ARRAY;i++){										//轮询重发buff
 		if(g_pro_struct.tx_struct.re_tx_sec_counter[i]>=g_pro_struct.tx_struct.re_tx_time[i] && g_pro_struct.tx_struct.re_tx_time[i]!=0){ //重发机制		
 			g_pro_struct.tx_struct.re_tx_sec_counter[i] = 0;

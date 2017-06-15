@@ -14,7 +14,7 @@
 	#include <stdint.h>
 
 		
-	APP_L218_EXTERN uint8 App_Module_Rest(void);
+	APP_L218_EXTERN void App_Module_Rest(void);
 	APP_L218_EXTERN void  App_DisconSer(void);
 			
 			
